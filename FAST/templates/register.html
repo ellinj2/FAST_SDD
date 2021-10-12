@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block content %}
+	<div class="card">
+		<div class="card-header">Registration</div>
+		<div class="card-body">
+			<form method="POST" action="/register" style="text-align: center;">
+				{{ form.hidden_tag() }}
+				<p>
+					{{ form.email.label(class="custom-form-label") }}<br>{{ form.email(placeholder="jane.doe@host.com") }}
+				</p>
+				<p>
+					{{ form.passowrd.lable(class="custom-form-label") }}<br>{{ form.password(placeholder="**********") }}
+				</p>
+				<p>
+					{{ form.confirm.label(class="custom-form-label") }}<br>{{ form.confirm(placeholder="**********") }}
+				</p>
+				{{ form.submit() }}
+			</form>
+		</div>
+		<div class="card-footer"><a href="login.hml">Already have an account?</a></div>
+	</div>
+{% endblock %}
