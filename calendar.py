@@ -45,5 +45,33 @@ Data abstraction for Calendar Objects.
 
 		return loaded
 
+	def heuristics(self):
+		"""
+		Order the events in the Calendar into a schedule that has no conflicts using heuristics.
+
+		Pre-conditions:
+		Each Event in events must have assigned_start_time set
+		start_time and end_time are comparable
+
+		Post-condition:
+		Each classroom in the schedule holds at most one exam at any moment.
+		Each exam is assigned to exactly one classroom.
+		"""
+
+		self.classroom_count = 0;
+		self.schedule = {}
+		for same_start_time_event in self.events:
+			for tmp_event in same_start_time_event:
+				room_found = 0;
+				#attempt to find an available classroom
+				for classroom_schedule in self.schedule:
+					if classroom_schedule[-1].assigned_end_time < same_start_time_event.assigned_start_time:
+						classroom_schedule.append(tmp_event)
+						room_found = 1
+						break;
+				#no room available, create a new room
+				if room_found == 0:
+					self.schedule["classroom" + str(self.classroom_count)] = [tmp_event]
+
 	def __about(self):
 		print(f"This Calendar currently has {len(self.events)} events.\nThese events are stored as \{timestamp: [Event Object]\}")
