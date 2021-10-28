@@ -2,11 +2,10 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
-
+from flask_session import Session
 
 db = SQLAlchemy()
 login_manager = LoginManager()
-
 
 def create_app():
     """Construct the core app object."""
@@ -32,9 +31,20 @@ def create_app():
         db.create_all()
 
         # Compile static assets
-        if app.config['FLASK_ENV'] == 'development':
-            compile_assets(app)
+        # if app.config['FLASK_ENV'] == 'development':
+        #     compile_assets(app)
 
         return app
 
 app = create_app()
+sess = Session()
+sess.init_app(app)
+
+login_manager.init_app(app)
+login_manager.login_view = "users.login"
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.get(user_id)
+
+from FAST import routes
