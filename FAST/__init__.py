@@ -38,6 +38,10 @@ def create_app():
 
 app = create_app()
 sess = Session()
+
+app.config["SECRET_KEY"] = "FAST_SDD"
+app.config["SESSION_TYPE"] = "sqlalchemy"
+
 sess.init_app(app)
 
 login_manager.init_app(app)
