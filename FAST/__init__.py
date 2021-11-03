@@ -2,10 +2,24 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
+from flask_migrate import Migrate
 from flask_session import Session
 
+import os
+
+basedir = os.path.abspath(os.path.dirname(__file__))
+
+app = Flask(__name__)
+app.config["SECTET_KEY"] = "mysecretkey"
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///" + os.path.join(basedir, "data.sqlite")
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+
 db = SQLAlchemy()
+Migrate(app, db)
+
 login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = "users.login"
 
 def create_app():
     """Construct the core app object."""
@@ -36,15 +50,12 @@ def create_app():
 
         return app
 
-app = create_app()
-sess = Session()
-sess.init_app(app)
+from FLASK.core.views import core
+from FLASK.error_pages.handlers import error_pages
+from FLASK.users.views import users
+from FLASK.calendars.views import calendars
 
-login_manager.init_app(app)
-login_manager.login_view = "users.login"
-
-@login_manager.user_loader
-def load_user(user_id):
-    return User.get(user_id)
-
-from FAST import routes
+app.register_blueprint(core)
+app.register_blueprint(error_pages)
+app.register_blueprint(users)
+app.register_blueprint(calendars)
