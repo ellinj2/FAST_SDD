@@ -1,10 +1,8 @@
-from flask import render_template
+from flask import render_template, Blueprint
 from flask_login import current_user, login_required, logout_user
 from FAST import app
 
-@app.route('/')
-def index():
-    return render_template('index.html')
+users = Blueprint("users", __name__)
 
 """ User homepage / dashboard """
 @app.route('/dashboard', methods =['GET'])
