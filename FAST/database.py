@@ -1,6 +1,7 @@
 from FLASK import db, login_manager
 from werkzeug.security import generate_password_hash, check_passwork_hash
 from flask_login import UserMixin
+from FAST.calendar.models import Calendar, Event
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -31,4 +32,28 @@ class Calendar(db.Model):
 	id = db.Column(db.Integer, primary_key=True)
 	user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
 
-	
+	name = db.Column(db.String, nullable=False)
+	obj = db.Column(db.PickleType(), nullable=False)
+
+	def __init__(self, name, obj):
+		self.name = name
+		self.obj = obj
+
+	def __repr__(self):
+		return f"Calendar ID: {self.id}\nName: {self.name}"
+
+class Event(db.Model):
+	users = db.relationship(User)
+
+	id = db.Column(db.Integer, primary_key=True)
+	user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+
+	name = db.Column(db.String, nullable=False)
+	obj = db.Column(db.PickleType(), nullable=False)
+
+	def __init__(self, name, obj):
+		self.name = name
+		self.obj = obj
+
+	def __repr__(self):
+		return f"Event ID: {self.id}\nName: {self.name}"
