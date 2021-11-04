@@ -1,14 +1,14 @@
 class Event:
-"""
-Abstraction for Event objects.
+	"""
+	Abstraction for Event objects.
 
-: self.tag : pseudo-unique identifier for an Event instance
-: self.start_time : timestamp indicating when the event will start
-: self.end_time : timestamp indicating when the event will end
-: self.assigned_start_time : timestamp indicating when the event will start, as determined by a scheduling algorithm
-: self.assigned_end_time : timestamp indicating when the event will end, as determined by a scheduling algorithm
-: self.notes : dictionary of raw text holding accessory information
-"""
+	: self.tag : pseudo-unique identifier for an Event instance
+	: self.start_time : timestamp indicating when the event will start
+	: self.end_time : timestamp indicating when the event will end
+	: self.assigned_start_time : timestamp indicating when the event will start, as determined by a scheduling algorithm
+	: self.assigned_end_time : timestamp indicating when the event will end, as determined by a scheduling algorithm
+	: self.notes : dictionary of raw text holding accessory information
+	"""
 	def __init__(self, tag, start_time=None, end_time=None):
 		"""
 		Initialize an Event instance
@@ -53,12 +53,12 @@ Abstraction for Event objects.
 		self.__update_notes__(kwargs)
 
 class Calendar:
-"""
-Data abstraction for Calendar Objects.
+	"""
+	Data abstraction for Calendar Objects.
 
-: self.tag : pseudo-unique identifier for a Calendar instance
-: self.events : dictionary of events being stored in the calendar
-"""
+	: self.tag : pseudo-unique identifier for a Calendar instance
+	: self.events : dictionary of events being stored in the calendar
+	"""
 	def __init__(self, tag, events=dict()):
 		"""
 		Initialize a Calendar instance
