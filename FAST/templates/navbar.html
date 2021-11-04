@@ -9,9 +9,14 @@
 				<li class="nav-item">
 					<a class="nav-link active" aria-current="page" href="#"> HOME </a>
 				</li>
-				<li class="nav-item">
-					<a class="nav-link" href="{{ url_for('calendar.upload_event') }}"> Upload Data </a>
-				</li>
+				{% if current_user.is_authenticated %}
+					<li class="nav-item">
+						<a class="nav-link" href="{{ url_for('calendar.upload_event') }}"> Create Event </a>
+					</li>
+					<li class="nav-item">
+						<a class="nav-link" href="{{ url_for('calendar.generate_calendar') }}"> Create Calendar </a>
+					</li>
+				{% endif %}
 				<!-- <li class="nav-item">
 					<a class="nav-link" href="#"> Upload Schedule </a>
 				</li> -->
@@ -21,6 +26,9 @@
 					<li class="nav-item"><a class="nav-link" href="{{ url_for('users.register') }}"> Register </a></li>
 					<li class="nav-item"><a class="nav-link" href="{{ url_for('users.login') }}"> Login </a></li>
 				</ul>
+				{% if current_user.is_authenticated %}
+					<li class="nav-item"><a class="nav-link" href="{{ url_for('users.logout') }}"> Logout </a></li>
+				{% endif %}
 			</span>
 		</div>
 	</nav>
