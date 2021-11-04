@@ -1,4 +1,4 @@
-from flask import render_template, Blueprint, redirect, url_for
+from flask import render_template, Blueprint, redirect, url_for, request
 from flask_login import login_user, current_user, login_required, logout_user
 from FAST import app, db
 from FAST.users.forms import *
@@ -38,4 +38,14 @@ def register():
 @users.route('/login', methods=["GET", "POST"])
 def login():
     form = LoginForm()
+
+    if form.validate_on_submit():
+        user = User.query.filter_by(email=form.email.data).first()
+        print(f"Trying to login...\nEmail: {form.email.data}\nPassword: {form.password.data}")
+        if user is not None and user.check_password(form.password.data):
+            login_user(user)
+            next = request.args.get("next")
+            if next == None or next[0] != "/":
+                next = url_for("index")
+            return redirect(next)
     return render_template("login.html", form=form)
