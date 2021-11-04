@@ -7,9 +7,6 @@ from FAST.calendar.models import Calendar, Event
 def load_user(user_id):
     return User.query.get(user_id)
 
-global USER_COUNT
-USER_COUNT = 0
-
 class User(db.Model, UserMixin):
 	__tablename__ = "users"
 	id = db.Column(db.Integer, primary_key=True)
@@ -20,9 +17,6 @@ class User(db.Model, UserMixin):
 	events = db.relationship("Event", backref="owner", lazy=True)
 
 	def __init__(self, email, password):
-		global USER_COUNT
-		USER_COUNT += 1
-		self.id = USER_COUNT
 		self.email = email
 		self.password_hash = generate_password_hash(password)
 
