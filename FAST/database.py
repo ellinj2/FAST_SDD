@@ -11,7 +11,7 @@ class User(db.Model, UserMixin):
 	__tablename__ = "users"
 	id = db.Column(db.Integer, primary_key=True)
 	email = db.Column(db.String, unique=True, index=True)
-	password_hash = db.column(db.String)
+	password_hash = db.Column(db.String)
 
 	calendars = db.relationship("Calendar", backref="owner", lazy=True)
 	events = db.relationship("Event", backref="owner", lazy=True)
