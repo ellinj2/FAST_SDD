@@ -49,10 +49,10 @@ def create_app():
 
         return app
 
-from FLASK.core.views import core
-from FLASK.error_pages.handlers import error_pages
-from FLASK.users.views import users
-from FLASK.calendar.views import calendar
+from FAST.core.views import core
+from FAST.error_pages.handlers import error_pages
+from FAST.users.views import users
+from FAST.calendar.views import calendar
 
 app.register_blueprint(core)
 app.register_blueprint(error_pages)
