@@ -1,5 +1,5 @@
 from flask import render_template, Blueprint, redirect, url_for
-from flask_login import current_user, login_required, logout_user
+from flask_login import login_user, current_user, login_required, logout_user
 from FAST import app, db
 from FAST.users.forms import *
 from FAST.database import User
@@ -29,6 +29,9 @@ def register():
 
         db.session.add(user)
         db.session.commit()
+
+        login_user(user)
+        
         return redirect(url_for('index'))
     return render_template("register.html", form=form)
 
