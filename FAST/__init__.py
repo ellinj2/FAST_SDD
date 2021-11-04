@@ -13,7 +13,7 @@ app.config["SECRET_KEY"] = "mysecretkey"
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///" + os.path.join(basedir, "data.sqlite")
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
-db = SQLAlchemy()
+db = SQLAlchemy(app)
 Migrate(app, db)
 
 login_manager = LoginManager()
@@ -59,4 +59,6 @@ app.register_blueprint(core)
 app.register_blueprint(users)
 app.register_blueprint(calendar)
 
-from FAST.database import load_user
+from FAST.database import *
+
+db.create_all()
