@@ -50,11 +50,13 @@ def create_app():
         return app
 
 from FAST.core.views import core
-from FAST.error_pages.handlers import error_pages
+# from FAST.error_pages.handlers import error_pages
 from FAST.users.views import users
 from FAST.calendar.views import calendar
 
 app.register_blueprint(core)
-app.register_blueprint(error_pages)
+# app.register_blueprint(error_pages)
 app.register_blueprint(users)
 app.register_blueprint(calendar)
+
+from FAST.database import load_user

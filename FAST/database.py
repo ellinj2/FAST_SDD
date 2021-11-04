@@ -1,5 +1,5 @@
-from FLASK import db, login_manager
-from werkzeug.security import generate_password_hash, check_passwork_hash
+from FAST import db, login_manager
+from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
 from FAST.calendar.models import Calendar, Event
 
