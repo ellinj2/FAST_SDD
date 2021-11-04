@@ -12,14 +12,9 @@ from wtforms.validators import (
 
 class SignupForm(FlaskForm):
     """User Sign-up Form."""
-    name = StringField(
-        'Name',
-        validators=[DataRequired()]
-    )
     email = StringField(
         'Email',
         validators=[
-            Length(min=6),
             Email(message='Enter a valid email.'),
             DataRequired()
         ]
@@ -28,7 +23,6 @@ class SignupForm(FlaskForm):
         'Password',
         validators=[
             DataRequired(),
-            Length(min=6, message='Select a stronger password.')
         ]
     )
     confirm = PasswordField(
@@ -37,10 +31,6 @@ class SignupForm(FlaskForm):
             DataRequired(),
             EqualTo('password', message='Passwords must match.')
         ]
-    )
-    website = StringField(
-        'Website',
-        validators=[Optional()]
     )
     submit = SubmitField('Register')
 
