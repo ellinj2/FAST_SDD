@@ -24,4 +24,5 @@ def register():
 
 @users.route('/login')
 def login():
-    return render_template("login.html")
+    form = LoginForm()
+    return render_template("login.html", form=form)
