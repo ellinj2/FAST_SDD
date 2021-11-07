@@ -46,3 +46,17 @@ def view_events():
     events = Event.query.filter_by(user_id=current_user.id).order_by(Event.name.desc()).all()
     print(events[0].obj.start_time, events[0].obj.end_time)
     return render_template("view_events.html", events=events, len=len(events))
+
+@users.route('/generate_calendar', methods=["GET", "POST"])
+@login_required
+def generate_calendar():
+    form = CalendarForm()
+
+    if form.validate_on_submit():
+        print(form.heuristic.data)
+        # times = form.timeslots.data
+        # times = [line.strip() for line in times.strip().split('\n')]
+        # calendar = CalendarObject(tag=form.name.data, time_slots=times)
+
+        
+    return render_template("generate_calendar.html", form=form)
