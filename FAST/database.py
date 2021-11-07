@@ -34,9 +34,10 @@ class Calendar(db.Model):
 	name = db.Column(db.String, nullable=False)
 	obj = db.Column(db.PickleType(), nullable=False)
 
-	def __init__(self, name, obj):
+	def __init__(self, name, obj, user_id):
 		self.name = name
 		self.obj = obj
+		self.user_id = user_id
 
 	def __repr__(self):
 		return f"Calendar ID: {self.id}\nName: {self.name}"
