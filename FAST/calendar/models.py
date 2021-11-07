@@ -1,4 +1,4 @@
-class Event:
+class EventObject:
 	"""
 	Abstraction for Event objects.
 
@@ -52,7 +52,7 @@ class Event:
 		self.assigned_end_time = end_time
 		self.__update_notes__(kwargs)
 
-class Calendar:
+class CalendarObject:
 	"""
 	Data abstraction for Calendar Objects.
 
