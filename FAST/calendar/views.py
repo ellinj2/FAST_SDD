@@ -14,6 +14,8 @@ def upload_event():
 
 	if form.validate_on_submit():
 		event = EventObject(tag=form.tag.data)
+		notes = [[f.strip() for f in line.split(':')] for lin in form.information.data.split('\n')]
+		event.assign({note[0]: ':'.join(note[1:]) for note in notes})
 		event_entry = Event(name=event.tag,
 							obj=event,
 							user_id=current_user.id)
@@ -21,7 +23,7 @@ def upload_event():
 		db.session.add(event_entry)
 		db.session.commit()
 		form = EventForm()
-		return render_template("upload_event.html", form=form)
+		return redirect(url_for("users.view_events"))
 	return render_template("upload_event.html", form=form)
 
 @calendar.route('/generate_claendar', methods=["GET", "POST"])
