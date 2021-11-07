@@ -30,11 +30,6 @@ def upload_event():
 		return redirect(url_for("users.view_events"))
 	return render_template("upload_event.html", form=form)
 
-@calendar.route('/generate_claendar', methods=["GET", "POST"])
-@login_required
-def generate_calendar():
-	return render_template("generate_calendar.html")
-
 @calendar.route('/download_calendar', methods=["GET", "POST"])
 @login_required
 def download_calendar():

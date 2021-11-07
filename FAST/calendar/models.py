@@ -59,7 +59,7 @@ class CalendarObject:
 	: self.tag : pseudo-unique identifier for a Calendar instance
 	: self.events : dictionary of events being stored in the calendar
 	"""
-	def __init__(self, tag, events=dict()):
+	def __init__(self, tag, time_slots, events=dict()):
 		"""
 		Initialize a Calendar instance
 
@@ -73,6 +73,7 @@ class CalendarObject:
 		"""
 		self.tag = tag
 		self.events = events
+		self.time_slots = time_slots
 
 	def load(self, events):
 		"""
@@ -98,6 +99,52 @@ class CalendarObject:
 				print(f"WARNING: Event {e.tag} does not have an assigned start time")
 
 		return loaded
+
+	def randomAssign(self, events):
+		"""
+		Assign start times at random across the events
+
+		Inputs:
+		events - list of Event objects
+
+		Pre-conditions:
+		events is not empty
+		self.time_slots is not empty
+
+		Post-conditions:
+		each Event in events is assigned a start-time at random from self.time_slots
+		"""
+		from random import choice
+
+		for e in events:
+			e.assign(start_time=choice(self.time_slots))
+
+	def startTimeAssign(self, events):
+		"""
+		Assign start times in terms of the Event object's start time
+
+		Inputs:
+		events - list of Event objects
+
+		Pre-conditions:
+		events is not empty
+		self.time_slots is not empty
+
+		Post-conditions:
+		each Event in events is assigned a start-time based on the Event object's start-time
+		
+		Notes:
+		- We will achieve this via a round-robin approach. For each start-time across the Event objects, we will pick the next time-slot from the Calendar
+		"""
+		event_times = {}
+		for e in events:
+			if e.start_time not in event_times:
+				event_times[e.start_time] = []
+			event_times[e.start_time].append(e)
+
+		for i, time in enumerate(event_times.keys()):
+			for e in event_times[time]:
+				e.assign(start_time=self.time_slots[i % len(self.time_slots)])
 
 	def heuristics(self):
 		"""
