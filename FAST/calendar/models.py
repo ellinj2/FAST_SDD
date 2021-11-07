@@ -74,6 +74,10 @@ class CalendarObject:
 		self.tag = tag
 		self.events = events
 		self.time_slots = time_slots
+		if events:
+			self.events=events
+		else:
+			self.events={time: [] for time in time_slots}
 
 	def load(self, events):
 		"""
@@ -90,8 +94,6 @@ class CalendarObject:
 		"""
 		loaded = 0
 		for e in events:
-			if e.start_time not in self.events:
-				self.events[e.assigned_start_time] = []
 			try:
 				self.events[e.assigned_start_time].append(e)
 				loaded += 1
@@ -146,37 +148,37 @@ class CalendarObject:
 			for e in event_times[time]:
 				e.assign(start_time=self.time_slots[i % len(self.time_slots)])
 
-	def heuristics(self):
-		"""
-		Order the events in the Calendar into a schedule that has no conflicts using heuristics.
+	# def heuristics(self):
+	# 	"""
+	# 	Order the events in the Calendar into a schedule that has no conflicts using heuristics.
 
-		Pre-conditions:
-		Each Event in events must have assigned_start_time set
-		start_time and end_time are comparable
+	# 	Pre-conditions:
+	# 	Each Event in events must have assigned_start_time set
+	# 	start_time and end_time are comparable
 
-		Post-condition:
-		Each classroom in the schedule holds at most one exam at any moment.
-		Each exam is assigned to exactly one classroom.
-		"""
+	# 	Post-condition:
+	# 	Each classroom in the schedule holds at most one exam at any moment.
+	# 	Each exam is assigned to exactly one classroom.
+	# 	"""
 
-		self.classroom_count = 0;
-		self.schedule = {}
-		#iterate through all the start_time, since self.events is a dictionary with start_time as key
-		#events with the earlist start_time gets assigned first
-		for start_time in sorted(self.events.keys()):
-			#iterate through all events with the same start_time
-			for tmp_event in self.events[start_time]:
-				room_found = 0;
-				#iterate through all classrooms, attempting to find an available classroom
-				for classroom_schedule in self.schedule:
-					if classroom_schedule[-1].assigned_end_time < start_time:
-						classroom_schedule.append(tmp_event)
-						room_found = 1
-						break;
-				#no room available, request a new room
-				if room_found == 0:
-					self.schedule["classroom" + str(self.classroom_count)] = [tmp_event]
-					self.classroom_count += 1
+	# 	self.classroom_count = 0;
+	# 	self.schedule = {}
+	# 	#iterate through all the start_time, since self.events is a dictionary with start_time as key
+	# 	#events with the earlist start_time gets assigned first
+	# 	for start_time in sorted(self.events.keys()):
+	# 		#iterate through all events with the same start_time
+	# 		for tmp_event in self.events[start_time]:
+	# 			room_found = 0;
+	# 			#iterate through all classrooms, attempting to find an available classroom
+	# 			for classroom_schedule in self.schedule:
+	# 				if classroom_schedule[-1].assigned_end_time < start_time:
+	# 					classroom_schedule.append(tmp_event)
+	# 					room_found = 1
+	# 					break;
+	# 			#no room available, request a new room
+	# 			if room_found == 0:
+	# 				self.schedule["classroom" + str(self.classroom_count)] = [tmp_event]
+	# 				self.classroom_count += 1
 
 	def __about(self):
 		print(f"This Calendar currently has {len(self.events)} events.\nThese events are stored as \{timestamp: [Event Object]\}")
