@@ -1,6 +1,7 @@
 from flask import render_template
 from flask_login import current_user, login_required, logout_user
 from FAST import app
+from FAST.forms import *
 
 #main = Blueprint('main', __name__)
 
@@ -19,3 +20,13 @@ def dashboard():
 def logout():
     logout_user()
     return redirect(url_for('auth.login'))
+
+@app.route('/data_upload')
+# @login_required
+def data_upload():
+    form = DataUploadForm()
+    if form.validate_on_submit():
+        print("Attempting to upload Schedule:\nTitle = {}\nContent = {}\n".format(
+            form.data.data.title, form.data.data.content
+            ))
+    return render_template("data_upload.html", form=form)

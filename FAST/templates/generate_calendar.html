@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="card">
+	<div class="card-header"> Generate Calendar </div>
+	<div class="card-body">
+		<form method="POST" style="text-align: center;">
+			{{ form.hidden_tag() }}
+			<p>
+				{{ form.name.label(class="custom-form-label") }}<br>{{ form.name(placeholder="Calendar #1 (should be pseudo-unique") }}
+			</p>
+			<p>
+				{{ form.heuristic.label(class="custom-form-label") }}<br>{{ form.heuristic() }}
+			</p>
+			<p>
+				{{ form.timeslots.label(class="custom-form-label") }}<br>{{ form.timeslots(placeholder="MM:DD:YY:HH:MM:SS") }}
+			</p>
+			{{ form.submit() }}
+		</form>
+	</div>
+</div>
+
+{% endblock %}

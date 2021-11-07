@@ -4,13 +4,13 @@
 	<div class="card">
 		<div class="card-header">Create Event</div>
 		<div class="card-body">
-			<form method="POST" action="/login" style="text-align: center;">
+			<form method="POST" style="text-align: center;">
 				{{ form.hidden_tag() }}
 				<p>
 					{{ form.tag.label(class="custom-form-label") }}<br>{{ form.tag(placeholder="Event #1 (should be fairly unique)", style="width: 75%;") }}
 				</p>
 				<p>
-					{{ form.information.label(class="custom-form-label") }}<br>{{ form.information(placeholder="Keyword: Information about the keyword\nAnother keyword: Information about another keyword", style="height: 75%; width: 75%;") }}
+					{{ form.information.label(class="custom-form-label") }}<br>{{ form.information(placeholder="Start Time: MM:DD:YY:HH:MM:SS\nEnd Time: MM:DD:YY:HH:MM:SS\nKeyword: Information about the keyword\nNote: For the time beign, \"Start Time\" and \"End Time\" are mandatory fields", style="height: 75%; width: 75%;") }}
 				</p>
 				{{ form.submit() }}
 			</form>

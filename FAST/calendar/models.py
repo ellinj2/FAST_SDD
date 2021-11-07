@@ -1,4 +1,4 @@
-class Event:
+class EventObject:
 	"""
 	Abstraction for Event objects.
 
@@ -32,11 +32,11 @@ class Event:
 			if key not in self.notes:
 				self.notes[key] = []
 			if type(update[key]) is list:
-				self.notes[key] += updates[key]
+				self.notes[key] += update[key]
 			else:
-				self.notes[key].append(updates[key])
+				self.notes[key].append(update[key])
 
-	def assign(start_time=None, end_time=None, **kwargs):
+	def assign(self, start_time=None, end_time=None, **kwargs):
 		"""
 		Assign specific attributes to this Event instance
 
@@ -52,14 +52,14 @@ class Event:
 		self.assigned_end_time = end_time
 		self.__update_notes__(kwargs)
 
-class Calendar:
+class CalendarObject:
 	"""
 	Data abstraction for Calendar Objects.
 
 	: self.tag : pseudo-unique identifier for a Calendar instance
 	: self.events : dictionary of events being stored in the calendar
 	"""
-	def __init__(self, tag, events=dict()):
+	def __init__(self, tag, time_slots, events=dict()):
 		"""
 		Initialize a Calendar instance
 
@@ -73,6 +73,11 @@ class Calendar:
 		"""
 		self.tag = tag
 		self.events = events
+		self.time_slots = time_slots
+		if events:
+			self.events=events
+		else:
+			self.events={time: [] for time in time_slots}
 
 	def load(self, events):
 		"""
@@ -89,8 +94,6 @@ class Calendar:
 		"""
 		loaded = 0
 		for e in events:
-			if e.start_time not in self.events:
-				self.events[e.assigned_start_time] = []
 			try:
 				self.events[e.assigned_start_time].append(e)
 				loaded += 1
@@ -99,37 +102,83 @@ class Calendar:
 
 		return loaded
 
-	def heuristics(self):
+	def randomAssign(self, events):
 		"""
-		Order the events in the Calendar into a schedule that has no conflicts using heuristics.
+		Assign start times at random across the events
+
+		Inputs:
+		events - list of Event objects
 
 		Pre-conditions:
-		Each Event in events must have assigned_start_time set
-		start_time and end_time are comparable
+		events is not empty
+		self.time_slots is not empty
 
-		Post-condition:
-		Each classroom in the schedule holds at most one exam at any moment.
-		Each exam is assigned to exactly one classroom.
+		Post-conditions:
+		each Event in events is assigned a start-time at random from self.time_slots
 		"""
+		from random import choice
 
-		self.classroom_count = 0;
-		self.schedule = {}
-		#iterate through all the start_time, since self.events is a dictionary with start_time as key
-		#events with the earlist start_time gets assigned first
-		for start_time in sorted(self.events.keys()):
-			#iterate through all events with the same start_time
-			for tmp_event in self.events[start_time]:
-				room_found = 0;
-				#iterate through all classrooms, attempting to find an available classroom
-				for classroom_schedule in self.schedule:
-					if classroom_schedule[-1].assigned_end_time < start_time:
-						classroom_schedule.append(tmp_event)
-						room_found = 1
-						break;
-				#no room available, request a new room
-				if room_found == 0:
-					self.schedule["classroom" + str(self.classroom_count)] = [tmp_event]
-					self.classroom_count += 1
+		for e in events:
+			e.assign(start_time=choice(self.time_slots))
+
+	def startTimeAssign(self, events):
+		"""
+		Assign start times in terms of the Event object's start time
+
+		Inputs:
+		events - list of Event objects
+
+		Pre-conditions:
+		events is not empty
+		self.time_slots is not empty
+
+		Post-conditions:
+		each Event in events is assigned a start-time based on the Event object's start-time
+		
+		Notes:
+		- We will achieve this via a round-robin approach. For each start-time across the Event objects, we will pick the next time-slot from the Calendar
+		"""
+		event_times = {}
+		for e in events:
+			if e.start_time not in event_times:
+				event_times[e.start_time] = []
+			event_times[e.start_time].append(e)
+
+		for i, time in enumerate(event_times.keys()):
+			for e in event_times[time]:
+				e.assign(start_time=self.time_slots[i % len(self.time_slots)])
+
+	# def heuristics(self):
+	# 	"""
+	# 	Order the events in the Calendar into a schedule that has no conflicts using heuristics.
+
+	# 	Pre-conditions:
+	# 	Each Event in events must have assigned_start_time set
+	# 	start_time and end_time are comparable
+
+	# 	Post-condition:
+	# 	Each classroom in the schedule holds at most one exam at any moment.
+	# 	Each exam is assigned to exactly one classroom.
+	# 	"""
+
+	# 	self.classroom_count = 0;
+	# 	self.schedule = {}
+	# 	#iterate through all the start_time, since self.events is a dictionary with start_time as key
+	# 	#events with the earlist start_time gets assigned first
+	# 	for start_time in sorted(self.events.keys()):
+	# 		#iterate through all events with the same start_time
+	# 		for tmp_event in self.events[start_time]:
+	# 			room_found = 0;
+	# 			#iterate through all classrooms, attempting to find an available classroom
+	# 			for classroom_schedule in self.schedule:
+	# 				if classroom_schedule[-1].assigned_end_time < start_time:
+	# 					classroom_schedule.append(tmp_event)
+	# 					room_found = 1
+	# 					break;
+	# 			#no room available, request a new room
+	# 			if room_found == 0:
+	# 				self.schedule["classroom" + str(self.classroom_count)] = [tmp_event]
+	# 				self.classroom_count += 1
 
 	def __about(self):
 		print(f"This Calendar currently has {len(self.events)} events.\nThese events are stored as \{timestamp: [Event Object]\}")

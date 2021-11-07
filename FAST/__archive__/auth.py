@@ -5,13 +5,13 @@ The auth routes for our app.
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_user
 
-from . import login_manager
-from .forms import LoginForm, SignupForm
-from .models import User, db
+from FAST import login_manager
+from FAST.login.forms import LoginForm, SignupForm
+from FAST.login.models import User, db
 
-auth = Blueprint('auth', __name__)
+auth_bp = Blueprint('auth', __name__)
 
-@auth.route('/signup', methods=['GET', 'POST'])
+@auth_bp.route('/signup', methods=['GET', 'POST'])
 def signup():
     """
     User sign-up page.
@@ -34,7 +34,7 @@ def signup():
             return redirect(url_for('app.dashboard'))
         flash('A user already exists with that email address.')
     return render_template(
-        'signup.jinja2',
+        'signup.html',
         title='Create an Account.',
         form=form,
         template='signup-page',
@@ -42,7 +42,7 @@ def signup():
     )
 
 
-@auth.route('/login', methods=['GET', 'POST'])
+@auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
     """
     Log-in page for registered users.
@@ -62,9 +62,9 @@ def login():
             next_page = request.args.get('next')
             return redirect(next_page or url_for('app.dashboard'))
         flash('Invalid username/password combination')
-        return redirect(url_for('auth.login'))
+        return redirect(url_for('auth_bp.login'))
     return render_template(
-        'login.jinja2',
+        'login.html',
         form=form,
         title='Log in.',
         template='login-page',
@@ -84,4 +84,4 @@ def load_user(user_id):
 def unauthorized():
     """Redirect unauthorized users to Login page."""
     flash('You must be logged in to view that page.')
-    return redirect(url_for('auth.login'))
+    return redirect(url_for('auth_bp.login'))
