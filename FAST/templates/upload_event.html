@@ -10,7 +10,7 @@
 					{{ form.tag.label(class="custom-form-label") }}<br>{{ form.tag(placeholder="Event #1 (should be fairly unique)", style="width: 75%;") }}
 				</p>
 				<p>
-					{{ form.information.label(class="custom-form-label") }}<br>{{ form.information(placeholder="Keyword: Information about the keyword\nAnother keyword: Information about another keyword", style="height: 75%; width: 75%;") }}
+					{{ form.information.label(class="custom-form-label") }}<br>{{ form.information(placeholder="Start Time: Day:HH:MM:SS\nEnd Time: Day:HH:MM:SS\nKeyword: Information about the keyword\nNote: For the time beign, \"Start Time\" and \"End Time\" are mandatory fields", style="height: 75%; width: 75%;") }}
 				</p>
 				{{ form.submit() }}
 			</form>

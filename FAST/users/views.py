@@ -44,5 +44,5 @@ def login():
 @login_required
 def view_events():
     events = Event.query.filter_by(user_id=current_user.id).order_by(Event.name.desc()).all()
-    print(type(events))
+    print(events[0].obj.start_time, events[0].obj.end_time)
     return render_template("view_events.html", events=events, len=len(events))

@@ -32,11 +32,11 @@ class EventObject:
 			if key not in self.notes:
 				self.notes[key] = []
 			if type(update[key]) is list:
-				self.notes[key] += updates[key]
+				self.notes[key] += update[key]
 			else:
-				self.notes[key].append(updates[key])
+				self.notes[key].append(update[key])
 
-	def assign(start_time=None, end_time=None, **kwargs):
+	def assign(self, start_time=None, end_time=None, **kwargs):
 		"""
 		Assign specific attributes to this Event instance
 

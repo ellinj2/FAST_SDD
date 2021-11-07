@@ -13,9 +13,13 @@ def upload_event():
 	form = EventForm()
 
 	if form.validate_on_submit():
-		event = EventObject(tag=form.tag.data)
-		notes = [[f.strip() for f in line.split(':')] for lin in form.information.data.split('\n')]
-		event.assign({note[0]: ':'.join(note[1:]) for note in notes})
+		notes = [[f.strip() for f in line.split(':')] for line in form.information.data.split('\n')]
+		notes = {note[0]: ':'.join(note[1:]) for note in notes}
+		print(notes)
+		event = EventObject(tag=form.tag.data,
+							start_time=notes["Start Time"],
+					 		end_time=notes["End Time"])
+		event.assign(**notes)
 		event_entry = Event(name=event.tag,
 							obj=event,
 							user_id=current_user.id)
