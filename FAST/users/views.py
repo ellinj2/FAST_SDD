@@ -1,8 +1,8 @@
-from flask import render_template, Blueprint, redirect, url_for
+from flask import render_template, Blueprint, redirect, url_for, request
 from flask_login import login_user, current_user, login_required, logout_user
 from FAST import app, db
 from FAST.users.forms import *
-from FAST.database import User
+from FAST.database import *
 
 users = Blueprint("users", __name__)
 
@@ -39,3 +39,10 @@ def register():
 def login():
     form = LoginForm()
     return render_template("login.html", form=form)
+
+@users.route("/view_events", methods=["GET"])
+@login_required
+def view_events():
+    events = Event.query.filter_by(user_id=current_user.id).order_by(Event.name.desc()).all()
+    print(type(events))
+    return render_template("view_events.html", events=events, len=len(events))
