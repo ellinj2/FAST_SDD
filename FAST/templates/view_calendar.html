@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="card">
+	<div class="card-header" style="text-align: center;">{{ calendar.name }}</div>
+	<div class="card-body">
+		{% for time in calendar.obj.time_slots %}
+			<h1 style="text-align: center;">{{ time }}</h1>
+			{% for event in calendar.obj.events[time] %}
+				<h3 style="text-align: center;">{{ event.tag }}</h3>
+			{% endfor %}
+		{% endfor %}
+	</div>
+</div>
+
+{% endblock %}
