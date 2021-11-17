@@ -38,3 +38,24 @@ def download_calendar():
 @calendar.route('/help')
 def help():
 	return redirect(url_for('calendar.upload_event'))
+
+@calendar.route('/cluster/<int:calendar_id>', methods=["GET", "POST"])
+@login_required
+def cluster(calendar_id):
+	form = ClusterForm()
+	calendar = Calendar.query.get_or_404(calendar_id)
+	form.attribute.choices = [(note, note) for note in calendar.object.notes.keys()]
+
+	if form.validate_on_submit():
+		# Assign defaults
+		form.shift = (form.shift.data if form.shift else 1)
+		form.start.data = (form.start.data if form.start else "earliest")
+		form.centers.data = (form.centers.data if form.centers else -1)
+		calendar.object.cluster(attribute=form.attribute.data,
+								shift=form.shift.data,
+								start=form.start.data,
+								centers=form.centers.data)
+
+		return redirect(url_for("users.view_calendar", calendar_id=calendar_id))
+
+	return render_template("cluster_calendar.html", form=form, calendar=calendar)
