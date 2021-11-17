@@ -173,8 +173,8 @@ class CalendarObject:
 		Pre-conditions:
 		- This Calendar instance must have Events pre-loaded
 
-		Side-effects:
-		Events in this calendar instance have their assigned times set so events with similar attribute values are in close time
+		Post-conditions:
+		- Events in this calendar instance have their assigned times set so events with similar attribute values are in close time
 		
 		Notes:
 		- Times will be assigned round-robin style if necessary
@@ -223,9 +223,34 @@ class CalendarObject:
 		for cluster in clusters:
 			time_index = 0
 			for i in range(len(cluster)):
+				# Assign time				
 				index = (start_time + time_index) % available_slots + start_time
 				cluster[i].assign(start_time=self.time_slots[index])
 				time_index += shift
+
+			# Remove cluster events from self.events
+			self.remove(cluster)
+
+			# Re-load events in cluster
+			loaded = self.load(cluster)
+			if loaded != len(cluster):
+				print("WARNING: Some events were not added successfully")
+
+	def remove(self, events):
+		"""
+		Remove each event from this Calendar
+
+		Inputs:
+		events - [Event] List of Events to remove
+
+		Post-conditions:
+		- Each Event in events is removed from Calendar.events if it exists
+		"""
+
+		for event in events:
+			for time in self.time_slots:
+				if event in self.events[time]:
+					self.events[time].remove(event)
 
 	# def heuristics(self):
 	# 	"""
