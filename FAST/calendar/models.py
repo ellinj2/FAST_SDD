@@ -32,6 +32,9 @@ class EventObject:
 		self.end_time = end_time
 		self.notes = dict()
 
+	def __eq__(self, other):
+		return self.tag == other.tag
+
 	def __update_notes__(self, update):
 		for key in update.keys():
 			if key not in self.notes:
