@@ -1,3 +1,8 @@
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.cluster import KMeans
+from sklearn.metrics import adjusted_rand_score
+import numpy as np
+
 class EventObject:
 	"""
 	Abstraction for Event objects.
@@ -66,6 +71,7 @@ class CalendarObject:
 		Inputs:
 		tag - pseudo-unique identifer for this Calendar instance
 		events (optional) - dictionary mapping Event.assigned_start_time to list of Event objects
+		time_slots - [String] List of start times to be considered
 
 		Pre-conditions:
 		tag must be assigned
@@ -148,17 +154,21 @@ class CalendarObject:
 			for e in event_times[time]:
 				e.assign(start_time=self.time_slots[i % len(self.time_slots)])
 
-	def cluster(self, attributes, shift=0):
+	def cluster(self,, attribute, shift=0, start="earliest", centers=-1):
 		"""
 		Cluster the events in the calendar based on the attributes listed
 
 		Inputs:
-		attributes - [ String ] List of attributes to cluster
+		attribute - String Attribute to cluster around
 		shift - Int Number of time-slots between clustered events (default = 0)
 		start - String Behavior to determine first assigned time (default = "earliest"). Options:
 			- "earliest": The first time is the earliest time available in the Calendar
 			- "first": The first time assigned to an event with the desired attribute
 			- "emptiest": The time slot with the fewest events assigned
+		centers - Int Number of clusters desired (default = sqrt(number of relevant events))
+
+		Pre-conditions:
+		- This Calendar instance must have Events pre-loaded
 
 		Side-effects:
 		Events in this calendar instance have their assigned times set so events with similar attribute values are in close time
@@ -167,6 +177,52 @@ class CalendarObject:
 		- Times will be assigned round-robin style if necessary
 		"""
 
+		# Track events with attribute
+		relevant = [event for event in self.events.items() if attr in event.notes.keys()]
+		
+		# Grab potential start times
+		start_index = 0
+		if start == "earliest":
+			start_index = 0
+		elif start == "first":
+			start_index = self.time_slots.index(min([event.assigned_start_time for event in relevant]))
+		elif start == "emptiest":
+			# Grab index of emptiest time slot
+			start_index = np.array([len(self.events[key]) for key in self.time_slots]).argsort()[0]
+		else:
+			print(f"WARNING: The input start behavior does not match any known behaviors")
+			continue
+
+		# Set number of clusters
+		local_clusters = centers
+		if local_clusters == -1:
+			local_clusters = len(relevant) ** (1/2)
+
+		# Gather descriptions
+		descriptions = [event.notes[attr] for event in relevant]
+		
+		# Build text vectorizer
+		vectorizer = TfidfVectorizer(stop_words='english')
+		X = vectorizer.fit_transform(descriptions)
+
+		# Build KMeans clustering model
+		model = KMeans(n_clusters=local_clusters, init='k-means++', max_iter=100, n_init=1)
+		model.fit(X)
+
+		# Cluster events
+		assignments = [predict(event.notes[attr]) for event in relevant]
+		clusters = [[] for _ in set(assignments)]
+		for i in range(len(assignments)):
+			clusters[i].append(relevant[assignments[i]])
+
+		# Assign start times for each cluster, round-robin style
+		available_slots = len(self.time_slots)
+		for cluster in clusters:
+			time_index = 0
+			for i in range(len(cluster)):
+				index = (start_time + time_index) % available_slots + start_time
+				cluster[i].assign(start_time=self.time_slots[index])
+				time_index += shift
 
 	# def heuristics(self):
 	# 	"""
