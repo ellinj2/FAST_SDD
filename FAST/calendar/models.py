@@ -2,6 +2,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.cluster import KMeans
 from sklearn.metrics import adjusted_rand_score
 import numpy as np
+import warnings
 
 class EventObject:
 	"""
@@ -61,6 +62,12 @@ class EventObject:
 		self.__update_notes__(kwargs)
 
 class CalendarObject:
+	KNOWN_START_BEHAVIOR = [
+		"first",
+		"earliest",
+		"emptiest",
+	]
+
 	"""
 	Data abstraction for Calendar Objects.
 
@@ -176,25 +183,18 @@ class CalendarObject:
 		Post-conditions:
 		- Events in this calendar instance have their assigned times set so events with similar attribute values are in close time
 		
+		Throws:
+		- Warning if start is not a known behavior
+
 		Notes:
 		- Times will be assigned round-robin style if necessary
 		"""
+		if start not in KNOWN_START_BEHAVIOR:
+			warnings.warn(f"WARNING: The input start behavior does not match any known behaviors")
+			return
 
 		# Track events with attribute
 		relevant = [event for event in self.events.items() if attr in event.notes.keys()]
-		
-		# Grab potential start times
-		start_index = 0
-		if start == "earliest":
-			start_index = 0
-		elif start == "first":
-			start_index = self.time_slots.index(min([event.assigned_start_time for event in relevant]))
-		elif start == "emptiest":
-			# Grab index of emptiest time slot
-			start_index = np.array([len(self.events[key]) for key in self.time_slots]).argsort()[0]
-		else:
-			print(f"WARNING: The input start behavior does not match any known behaviors")
-			continue
 
 		# Set number of clusters
 		local_clusters = centers
@@ -221,6 +221,15 @@ class CalendarObject:
 		# Assign start times for each cluster, round-robin style
 		available_slots = len(self.time_slots)
 		for cluster in clusters:
+			# Grab potential start times
+			start_index = 0
+			if start == "earliest":
+				start_index = 0
+			elif start == "first":
+				start_index = self.time_slots.index(min([event.assigned_start_time for event in clusters]))
+			elif start == "emptiest":
+				# Grab index of emptiest time slot
+				start_index = np.array([len(self.events[key]) for key in self.time_slots]).argsort()[0]
 			time_index = 0
 			for i in range(len(cluster)):
 				# Assign time				
