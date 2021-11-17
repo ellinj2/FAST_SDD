@@ -44,7 +44,7 @@ def help():
 def cluster(calendar_id):
 	form = ClusterForm()
 	calendar = Calendar.query.get_or_404(calendar_id)
-	form.attribute.choices = [(note, note) for note in calendar.obj.notes.keys()]
+	form.attribute.choices = [(note, note) for event in calendar.obj.events.values() for note in event.notes.keys()]
 
 	if form.validate_on_submit():
 		# Assign defaults
