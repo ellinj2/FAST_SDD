@@ -164,7 +164,7 @@ class CalendarObject:
 			for e in event_times[time]:
 				e.assign(start_time=self.time_slots[i % len(self.time_slots)])
 
-	def cluster(self,, attribute, shift=0, start="earliest", centers=-1):
+	def cluster(self, attribute, shift=0, start="earliest", centers=-1):
 		"""
 		Cluster the events in the calendar based on the attributes listed
 
