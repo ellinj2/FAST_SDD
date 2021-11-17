@@ -11,6 +11,7 @@
 			{% endfor %}
 		{% endfor %}
 	</div>
+	<div class="card-footer text-center"><a href="{{ url_for('calendar.cluster', calendar_id=calendar.id) }}">Cluster events</a></div>
 </div>
 
 {% endblock %}
