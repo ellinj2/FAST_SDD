@@ -148,6 +148,26 @@ class CalendarObject:
 			for e in event_times[time]:
 				e.assign(start_time=self.time_slots[i % len(self.time_slots)])
 
+	def cluster(self, attributes, shift=0):
+		"""
+		Cluster the events in the calendar based on the attributes listed
+
+		Inputs:
+		attributes - [ String ] List of attributes to cluster
+		shift - Int Number of time-slots between clustered events (default = 0)
+		start - String Behavior to determine first assigned time (default = "earliest"). Options:
+			- "earliest": The first time is the earliest time available in the Calendar
+			- "first": The first time assigned to an event with the desired attribute
+			- "emptiest": The time slot with the fewest events assigned
+
+		Side-effects:
+		Events in this calendar instance have their assigned times set so events with similar attribute values are in close time
+		
+		Notes:
+		- Times will be assigned round-robin style if necessary
+		"""
+
+
 	# def heuristics(self):
 	# 	"""
 	# 	Order the events in the Calendar into a schedule that has no conflicts using heuristics.
