@@ -5,10 +5,11 @@
 		<div class="card-header">Upload Event</div>
 			<form action="" method="POST" enctype=multipart/form-data>
 				{{ form.hidden_tag() }}
-                {{ form.file }}
-                <p><input type=file name=file>
-                <input type="submit">
-			</form>
+                <p>
+	                {{ form.file.label(class="custom-form-label") }}{{ form.file() }}
+	            </p>
+            	{{ form.submit() }}
+            </form>
 		<div class="card-footer"></div>
 	</div>
 {% endblock %}

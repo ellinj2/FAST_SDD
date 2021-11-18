@@ -7,6 +7,7 @@ from FAST.calendar.models import *
 from FAST.database import *
 from werkzeug.utils import secure_filename
 import os
+import json
 
 calendar = Blueprint("calendar", __name__)
 
@@ -45,37 +46,24 @@ def help():
 @calendar.route('/upload_file', methods=["GET", "POST"])
 @login_required
 def upload_file():
-	form = EventForm()
-	print("here1")
-	print(form.data)
-	print(form.information)
-	# if form.validate_on_submit():
-	# 	print("here2")
-	# 	notes = [[f.strip() for f in line.split(':')] for line in form.information.data.split('\n')]
-	# 	notes = {note[0]: ':'.join(note[1:]) for note in notes}
-	# 	print(notes)
-	# 	event = EventObject(tag=form.tag.data,
-	# 						start_time=notes["Start Time"],
-	# 				 		end_time=notes["End Time"])
-	# 	event.assign(**notes)
-	# 	event_entry = Event(name=event.tag,
-	# 						obj=event,
-	# 						user_id=current_user.id)
+	form = UploadForm()
+	if form.validate_on_submit():
+		file = form.file.data
+		json_data = json.loads(file.read())
+		event = EventObject(
+				tag=json_data["Name"],
+				start_time=json_data["Start Time"],
+				end_time=json_data["End Time"]
+			)
+		event.assign(**{key: json_data[key] for key in json_data if key not in ["Start Time", "End Time"]})
+		event_entry = Event(
+				name=event.tag,
+				obj=event,
+				user_id=current_user.id
+			)
+		db.session.add(event_entry)
+		db.session.commit()
 
-	# 	db.session.add(event_entry)
-	# 	db.session.commit()
-	# 	form = EventForm()
+		return redirect(url_for("users.view_events"))
+
 	return render_template("upload_file.html", form=form)
-	# if form.validate_on_submit():
-    #     filename = secure_filename(form.file.data.filename)
-    #     form.file.data.save('uploads/' + filename)
-    #     return redirect(url_for('upload'))
-
-
-	# if request.method == 'POST':
-		# req = request.get_json()
-		# form = DataUploadForm.from_json(req)
-		# language = req['language']
-		# print(language)
-	# 	print("here")
-	# return render_template("upload_file.html")
