@@ -8,6 +8,7 @@ from FAST.database import *
 from werkzeug.utils import secure_filename
 import os
 import json
+from sqlalchemy.orm.attributes import flag_modified
 
 calendar = Blueprint("calendar", __name__)
 
@@ -85,10 +86,13 @@ def cluster(calendar_id):
 		shift = (form.shift.data if form.shift else 1)
 		start = (form.start.data if form.start else "earliest")
 		centers = (form.centers.data if form.centers else -1)
-		calendar.obj.cluster(attribute=form.attribute.data,
+		obj_ = calendar.obj
+		obj_.cluster(attribute=form.attribute.data,
 								shift=shift,
 								start=start,
 								centers=centers)
+		flag_modified(calendar, 'obj')
+		db.session.commit()
 
 		return redirect(url_for("users.view_calendar", calendar_id=calendar_id))
 
@@ -104,16 +108,19 @@ def antiCluster(calendar_id):
 					for note in event.notes.keys()])
 	form.attribute.choices = [(note, note) for note in sorted(notes)]
 	form.start.choices = [(option, option) for option in sorted(CalendarObject.KNOWN_START_BEHAVIOR)]
-
 	if form.validate_on_submit():
 		# Assign defautls
-		form.shift = (form.shift.data if form.shift else 1)
-		form.start.data = (form.start.data if form.start else "earliest")
-		form.centers.data = (form.centers.data if form.centers else -1)
-		calendar.obj.antiCluster(attribute=form.attribute.data,
-									shift=form.shift,
-									start=form.start.data,
-									centers=form.cetners)
+		shift = (form.shift.data if form.shift else 1)
+		start = (form.start.data if form.start else "earliest")
+		centers = (form.centers.data if form.centers else -1)
+		obj_ = calendar.obj
+		obj_.antiCluster(attribute=form.attribute.data,
+									shift=shift,
+									start=start,
+									centers=centers)
+
+		flag_modified(calendar, 'obj')
+		db.session.commit()
 
 		return redirect(url_for("users.view_calendar", calendar_id=calendar_id))
 

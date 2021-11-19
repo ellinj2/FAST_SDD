@@ -6,9 +6,10 @@ import pandas as pd
 import warnings
 
 class KMeansAnti:
-	def __init__(self, n_clusters):
+	def __init__(self, n_clusters, max_iter=None):
 		self.k = n_clusters
 		self.centers = None
+		self.max_iter = max_iter
 
 	def loss(self, X, centroids, clusters):
 		sum_ = 0
@@ -17,31 +18,32 @@ class KMeansAnti:
 		return sum_
 
 	def __make_centers__(self, X):
-		centers = np.zeros((self.x, X.shape[1]))
-		centers[0] = np.random.choice(X, size=1)
+		centers = [0 for _ in range(self.k)]
+		centers[0] = X[np.random.randint(X.shape[0])]
 		distances = np.linalg.norm(X - centers[0])
 		for i in range(1, self.k):
 			centers[i] = X[np.argmax(distances)]
 			distances = np.minimum(distances, np.linalg.norm(X - centers[i]))
 
-		return centers
+		return np.array(centers)
 
 	def fit(self, X):
 		diff = True
 		cluster = np.zeros(X.shape[0])
 
-		centroids = self.__make_centers__(X)		
+		centroids = self.__make_centers__(np.array(X.todense()))
 
-		while diff:
+		iteration = 0
+		while diff or (self.max_iter and iteration < self.max_iter):
 			for i, row in enumerate(X):
 				mn_dist = float('inf')
 				for idx, centroid in enumerate(centroids):
-					d = -1 * np.linalg.norm(centroid - row)
+					d = np.linalg.norm(centroid - row)
 					if d < mn_dist:
-						mx_dist = d
+						mn_dist = d
 						cluster[i] = idx
 
-			new_centroids = pd.DataFrame(X).groupby(by=cluster).mean().values
+			new_centroids = pd.DataFrame(X.todense()).groupby(by=cluster).mean().values
 			if np.count_nonzero(centroids - new_centroids) == 0:
 				diff = False
 			else:
@@ -50,13 +52,13 @@ class KMeansAnti:
 		self.centers = centroids
 
 	def predict(self, X):
-		assignments = np.zeros(X.shape[0])
+		assignments = np.zeros(X.shape[0], dtype=int)
 		for i, row in enumerate(X):
 			mn_dist = float('inf')
 			for idx, centroid in enumerate(self.centers):
 				d = -1 * np.linalg.norm(centroid - row)
 				if d < mn_dist:
-					mx_dist = d
+					mn_dist = d
 					assignments[i] = idx
 
 		return assignments
@@ -114,8 +116,10 @@ class EventObject:
 		Post-conditions:
 		self.notes extends kwargs
 		"""
-		self.assigned_start_time = start_time
-		self.assigned_end_time = end_time
+		if start_time:
+			self.assigned_start_time = start_time
+		if end_time:
+			self.assigned_end_time = end_time
 		self.__update_notes__(kwargs)
 
 class CalendarObject:
@@ -293,15 +297,16 @@ class CalendarObject:
 				index = (start_index + time_index) % available_slots + start_index
 
 				cluster[i].assign(start_time=self.time_slots[index])
+				print(f"Assigned {cluster[i].tag} to {self.time_slots[index]}")
 				time_index += shift
 
-			# Remove cluster events from self.events
-			self.remove(cluster)
+		# Remove cluster events from self.events
+		self.remove(relevant)
 
-			# Re-load events in cluster
-			loaded = self.load(cluster)
-			if loaded != len(cluster):
-				print("WARNING: Some events were not added successfully")
+		# Re-load events in cluster
+		loaded = self.load(relevant)
+		if loaded != len(relevant):
+			print("WARNING: Some events were not added successfully")
 
 	def antiCluster(self, attribute, shift=0, start="earliest", centers=-1):
 		if start not in CalendarObject.KNOWN_START_BEHAVIOR:
@@ -331,7 +336,7 @@ class CalendarObject:
 		assignments = [model.predict(vectorizer.transform(event.notes[attribute])) for event in relevant]
 		clusters = [[] for _ in range(local_clusters)]
 		for i in range(len(assignments)):
-			clusters[assignments[i][0]].append(relevant[i])
+			clusters[int(assignments[i][0])].append(relevant[i])
 
 		# Assign start times for each cluster, round-robin style
 		available_slots = len(self.time_slots)
@@ -350,15 +355,16 @@ class CalendarObject:
 				# Assign time				
 				index = (start_index + time_index) % available_slots + start_index
 				cluster[i].assign(start_time=self.time_slots[index])
+				print(f"Assigned {cluster[i].tag} to {self.time_slots[index]}")
 				time_index += shift
 
 			# Remove cluster events from self.events
-			self.remove(cluster)
+		self.remove(relevant)
 
-			# Re-load events in cluster
-			loaded = self.load(cluster)
-			if loaded != len(cluster):
-				print("WARNING: Some events were not added successfully")
+		# Re-load events in cluster
+		loaded = self.load(relevant)
+		if loaded != len(relevant):
+			print("WARNING: Some events were not added successfully")
 
 	def remove(self, events):
 		"""
