@@ -12,7 +12,7 @@ class EventForm(FlaskForm):
     submit = SubmitField("Create Event")
 
 class UploadForm(FlaskForm):
-    file = FileField("JSON file", validators=[
+    file = FileField("", validators=[
             FileRequired(),
             FileAllowed(['json'], "JSON files only!")
         ])

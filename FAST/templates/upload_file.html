@@ -3,13 +3,13 @@
 {% block content %}
 	<div class="card">
 		<div class="card-header">Upload Event</div>
-			<form action="" method="POST" enctype=multipart/form-data>
+			<form class="upload_file" action="" method="POST" enctype=multipart/form-data;">
 				{{ form.hidden_tag() }}
                 <p>
 	                {{ form.file.label(class="custom-form-label") }}{{ form.file() }}
 	            </p>
-            	{{ form.submit() }}
+            		{{ form.submit() }}
             </form>
-		<div class="card-footer"></div>
+			<div class="card-footer text-center">Please upload a JSON file</div>
 	</div>
 {% endblock %}
