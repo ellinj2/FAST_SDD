@@ -291,6 +291,7 @@ class CalendarObject:
 			for i in range(len(cluster)):
 				# Assign time				
 				index = (start_index + time_index) % available_slots + start_index
+
 				cluster[i].assign(start_time=self.time_slots[index])
 				time_index += shift
 

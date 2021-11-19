@@ -115,7 +115,6 @@ def antiCluster(calendar_id):
 									start=form.start.data,
 									centers=form.cetners)
 
-
 		return redirect(url_for("users.view_calendar", calendar_id=calendar_id))
 
 	return render_template("anticluster_calendar.html", form=form, calendar=calendar.obj)
