@@ -2,7 +2,64 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.cluster import KMeans
 from sklearn.metrics import adjusted_rand_score
 import numpy as np
+import pandas as pd
 import warnings
+
+class KMeansAnti:
+	def __init__(self, n_clusters):
+		self.k = n_clusters
+		self.centers = None
+
+	def loss(self, X, centroids, clusters):
+		sum_ = 0
+		for i, val in enumerate(X):
+			sum_ += np.linalg.norm(centroids[int(clusters[i])] - val)
+		return sum_
+
+	def __make_centers__(self, X):
+		centers = np.zeros((self.x, X.shape[1]))
+		centers[0] = np.random.choice(X, size=1)
+		distances = np.linalg.norm(X - centers[0])
+		for i in range(1, self.k):
+			centers[i] = X[np.argmax(distances)]
+			distances = np.minimum(distances, np.linalg.norm(X - centers[i]))
+
+		return centers
+
+	def fit(self, X):
+		diff = True
+		cluster = np.zeros(X.shape[0])
+
+		centroids = self.__make_centers__(X)		
+
+		while diff:
+			for i, row in enumerate(X):
+				mn_dist = float('inf')
+				for idx, centroid in enumerate(centroids):
+					d = -1 * np.linalg.norm(centroid - row)
+					if d < mn_dist:
+						mx_dist = d
+						cluster[i] = idx
+
+			new_centroids = pd.DataFrame(X).groupby(by=cluster).mean().values
+			if np.count_nonzero(centroids - new_centroids) == 0:
+				diff = False
+			else:
+				centroids = new_centroids
+
+		self.centers = centroids
+
+	def predict(self, X):
+		assignments = np.zeros(X.shape[0])
+		for i, row in enumerate(X):
+			mn_dist = float('inf')
+			for idx, centroid in enumerate(self.centers):
+				d = -1 * np.linalg.norm(centroid - row)
+				if d < mn_dist:
+					mx_dist = d
+					assignments[i] = idx
+
+		return assignments
 
 class EventObject:
 	"""
@@ -246,9 +303,61 @@ class CalendarObject:
 				print("WARNING: Some events were not added successfully")
 
 	def antiCluster(self, attribute, shift=0, start="earliest", centers=-1):
-		if centers == -1:
-			centers = int(centers ** (1/2))
-		pass
+		if start not in CalendarObject.KNOWN_START_BEHAVIOR:
+			warnings.warn(f"WARNING: The input start behavior does not match any known behaviors")
+			return
+
+		# Track events with attribute
+		relevant = [event for events in self.events.values() for event in events if attribute in event.notes.keys()]
+
+		# Set number of clusters
+		local_clusters = centers
+		if local_clusters == -1:
+			local_clusters = len(relevant) ** (1/2)
+
+		# Gather descriptions
+		descriptions = [' '.join(event.notes[attribute]) for event in relevant]
+		
+		# Build text vectorizer
+		vectorizer = TfidfVectorizer(stop_words='english')
+		X = vectorizer.fit_transform(descriptions)
+
+		# Build KMeans clustering model
+		model = KMeansAnti(n_clusters=int(local_clusters))
+		model.fit(X)
+
+		# Cluster events
+		assignments = [model.predict(vectorizer.transform(event.notes[attribute])) for event in relevant]
+		clusters = [[] for _ in range(local_clusters)]
+		for i in range(len(assignments)):
+			clusters[assignments[i][0]].append(relevant[i])
+
+		# Assign start times for each cluster, round-robin style
+		available_slots = len(self.time_slots)
+		for cluster in clusters:
+			# Grab potential start times
+			start_index = 0
+			if start == "earliest":
+				start_index = 0
+			elif start == "first":
+				start_index = self.time_slots.index(min([event.assigned_start_time for event in clusters]))
+			elif start == "emptiest":
+				# Grab index of emptiest time slot
+				start_index = np.array([len(self.events[key]) for key in self.time_slots]).argsort()[0]
+			time_index = 0
+			for i in range(len(cluster)):
+				# Assign time				
+				index = (start_index + time_index) % available_slots + start_index
+				cluster[i].assign(start_time=self.time_slots[index])
+				time_index += shift
+
+			# Remove cluster events from self.events
+			self.remove(cluster)
+
+			# Re-load events in cluster
+			loaded = self.load(cluster)
+			if loaded != len(cluster):
+				print("WARNING: Some events were not added successfully")
 
 	def remove(self, events):
 		"""
