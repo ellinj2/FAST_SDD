@@ -1,3 +1,68 @@
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.cluster import KMeans
+from sklearn.metrics import adjusted_rand_score
+import numpy as np
+import pandas as pd
+import warnings
+
+class KMeansAnti:
+	def __init__(self, n_clusters, max_iter=None):
+		self.k = n_clusters
+		self.centers = None
+		self.max_iter = max_iter
+
+	def loss(self, X, centroids, clusters):
+		sum_ = 0
+		for i, val in enumerate(X):
+			sum_ += np.linalg.norm(centroids[int(clusters[i])] - val)
+		return sum_
+
+	def __make_centers__(self, X):
+		centers = [0 for _ in range(self.k)]
+		centers[0] = X[np.random.randint(X.shape[0])]
+		distances = np.linalg.norm(X - centers[0])
+		for i in range(1, self.k):
+			centers[i] = X[np.argmax(distances)]
+			distances = np.minimum(distances, np.linalg.norm(X - centers[i]))
+
+		return np.array(centers)
+
+	def fit(self, X):
+		diff = True
+		cluster = np.zeros(X.shape[0])
+
+		centroids = self.__make_centers__(np.array(X.todense()))
+
+		iteration = 0
+		while diff or (self.max_iter and iteration < self.max_iter):
+			for i, row in enumerate(X):
+				mn_dist = float('inf')
+				for idx, centroid in enumerate(centroids):
+					d = np.linalg.norm(centroid - row)
+					if d < mn_dist:
+						mn_dist = d
+						cluster[i] = idx
+
+			new_centroids = pd.DataFrame(X.todense()).groupby(by=cluster).mean().values
+			if np.count_nonzero(centroids - new_centroids) == 0:
+				diff = False
+			else:
+				centroids = new_centroids
+
+		self.centers = centroids
+
+	def predict(self, X):
+		assignments = np.zeros(X.shape[0], dtype=int)
+		for i, row in enumerate(X):
+			mn_dist = float('inf')
+			for idx, centroid in enumerate(self.centers):
+				d = -1 * np.linalg.norm(centroid - row)
+				if d < mn_dist:
+					mn_dist = d
+					assignments[i] = idx
+
+		return assignments
+
 class EventObject:
 	"""
 	Abstraction for Event objects.
@@ -27,6 +92,9 @@ class EventObject:
 		self.end_time = end_time
 		self.notes = dict()
 
+	def __eq__(self, other):
+		return self.tag == other.tag
+
 	def __update_notes__(self, update):
 		for key in update.keys():
 			if key not in self.notes:
@@ -48,11 +116,19 @@ class EventObject:
 		Post-conditions:
 		self.notes extends kwargs
 		"""
-		self.assigned_start_time = start_time
-		self.assigned_end_time = end_time
+		if start_time:
+			self.assigned_start_time = start_time
+		if end_time:
+			self.assigned_end_time = end_time
 		self.__update_notes__(kwargs)
 
 class CalendarObject:
+	KNOWN_START_BEHAVIOR = [
+		"first",
+		"earliest",
+		"emptiest",
+	]
+
 	"""
 	Data abstraction for Calendar Objects.
 
@@ -66,6 +142,7 @@ class CalendarObject:
 		Inputs:
 		tag - pseudo-unique identifer for this Calendar instance
 		events (optional) - dictionary mapping Event.assigned_start_time to list of Event objects
+		time_slots - [String] List of start times to be considered
 
 		Pre-conditions:
 		tag must be assigned
@@ -147,6 +224,163 @@ class CalendarObject:
 		for i, time in enumerate(event_times.keys()):
 			for e in event_times[time]:
 				e.assign(start_time=self.time_slots[i % len(self.time_slots)])
+
+	def cluster(self, attribute, shift=0, start="earliest", centers=-1):
+		"""
+		Cluster the events in the calendar based on the attributes listed
+
+		Inputs:
+		attribute - String Attribute to cluster around
+		shift - Int Number of time-slots between clustered events (default = 0)
+		start - String Behavior to determine first assigned time (default = "earliest"). Options:
+			- "earliest": The first time is the earliest time available in the Calendar
+			- "first": The first time assigned to an event with the desired attribute
+			- "emptiest": The time slot with the fewest events assigned
+		centers - Int Number of clusters desired (default = sqrt(number of relevant events))
+
+		Pre-conditions:
+		- This Calendar instance must have Events pre-loaded
+
+		Post-conditions:
+		- Events in this calendar instance have their assigned times set so events with similar attribute values are in close time
+		
+		Throws:
+		- Warning if start is not a known behavior
+
+		Notes:
+		- Times will be assigned round-robin style if necessary
+		"""
+		if start not in CalendarObject.KNOWN_START_BEHAVIOR:
+			warnings.warn(f"WARNING: The input start behavior does not match any known behaviors")
+			return
+
+		# Track events with attribute
+		relevant = [event for events in self.events.values() for event in events if attribute in event.notes.keys()]
+
+		# Set number of clusters
+		local_clusters = centers
+		if local_clusters == -1:
+			local_clusters = len(relevant) ** (1/2)
+
+		# Gather descriptions
+		descriptions = [' '.join(event.notes[attribute]) for event in relevant]
+		
+		# Build text vectorizer
+		vectorizer = TfidfVectorizer(stop_words='english')
+		X = vectorizer.fit_transform(descriptions)
+
+		# Build KMeans clustering model
+		model = KMeans(n_clusters=int(local_clusters), init='k-means++', max_iter=100, n_init=1)
+		model.fit(X)
+
+		# Cluster events
+		assignments = [model.predict(vectorizer.transform(event.notes[attribute])) for event in relevant]
+		clusters = [[] for _ in range(local_clusters)]
+		for i in range(len(assignments)):
+			clusters[assignments[i][0]].append(relevant[i])
+
+		# Assign start times for each cluster, round-robin style
+		available_slots = len(self.time_slots)
+		for cluster in clusters:
+			# Grab potential start times
+			start_index = 0
+			if start == "earliest":
+				start_index = 0
+			elif start == "first":
+				start_index = self.time_slots.index(min([event.assigned_start_time for event in clusters]))
+			elif start == "emptiest":
+				# Grab index of emptiest time slot
+				start_index = np.array([len(self.events[key]) for key in self.time_slots]).argsort()[0]
+			time_index = 0
+			for i in range(len(cluster)):
+				# Assign time				
+				index = (start_index + time_index) % available_slots + start_index
+
+				cluster[i].assign(start_time=self.time_slots[index])
+				print(f"Assigned {cluster[i].tag} to {self.time_slots[index]}")
+				time_index += shift
+
+		# Remove cluster events from self.events
+		self.remove(relevant)
+
+		# Re-load events in cluster
+		loaded = self.load(relevant)
+		if loaded != len(relevant):
+			print("WARNING: Some events were not added successfully")
+
+	def antiCluster(self, attribute, shift=0, start="earliest", centers=-1):
+		if start not in CalendarObject.KNOWN_START_BEHAVIOR:
+			warnings.warn(f"WARNING: The input start behavior does not match any known behaviors")
+			return
+
+		# Track events with attribute
+		relevant = [event for events in self.events.values() for event in events if attribute in event.notes.keys()]
+
+		# Set number of clusters
+		local_clusters = centers
+		if local_clusters == -1:
+			local_clusters = len(relevant) ** (1/2)
+
+		# Gather descriptions
+		descriptions = [' '.join(event.notes[attribute]) for event in relevant]
+		
+		# Build text vectorizer
+		vectorizer = TfidfVectorizer(stop_words='english')
+		X = vectorizer.fit_transform(descriptions)
+
+		# Build KMeans clustering model
+		model = KMeansAnti(n_clusters=int(local_clusters))
+		model.fit(X)
+
+		# Cluster events
+		assignments = [model.predict(vectorizer.transform(event.notes[attribute])) for event in relevant]
+		clusters = [[] for _ in range(local_clusters)]
+		for i in range(len(assignments)):
+			clusters[int(assignments[i][0])].append(relevant[i])
+
+		# Assign start times for each cluster, round-robin style
+		available_slots = len(self.time_slots)
+		for cluster in clusters:
+			# Grab potential start times
+			start_index = 0
+			if start == "earliest":
+				start_index = 0
+			elif start == "first":
+				start_index = self.time_slots.index(min([event.assigned_start_time for event in clusters]))
+			elif start == "emptiest":
+				# Grab index of emptiest time slot
+				start_index = np.array([len(self.events[key]) for key in self.time_slots]).argsort()[0]
+			time_index = 0
+			for i in range(len(cluster)):
+				# Assign time				
+				index = (start_index + time_index) % available_slots + start_index
+				cluster[i].assign(start_time=self.time_slots[index])
+				print(f"Assigned {cluster[i].tag} to {self.time_slots[index]}")
+				time_index += shift
+
+			# Remove cluster events from self.events
+		self.remove(relevant)
+
+		# Re-load events in cluster
+		loaded = self.load(relevant)
+		if loaded != len(relevant):
+			print("WARNING: Some events were not added successfully")
+
+	def remove(self, events):
+		"""
+		Remove each event from this Calendar
+
+		Inputs:
+		events - [Event] List of Events to remove
+
+		Post-conditions:
+		- Each Event in events is removed from Calendar.events if it exists
+		"""
+
+		for event in events:
+			for time in self.time_slots:
+				if event in self.events[time]:
+					self.events[time].remove(event)
 
 	# def heuristics(self):
 	# 	"""

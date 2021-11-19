@@ -8,6 +8,7 @@ from FAST.database import *
 from werkzeug.utils import secure_filename
 import os
 import json
+from sqlalchemy.orm.attributes import flag_modified
 
 calendar = Blueprint("calendar", __name__)
 
@@ -50,20 +51,77 @@ def upload_file():
 	if form.validate_on_submit():
 		file = form.file.data
 		json_data = json.loads(file.read())
-		event = EventObject(
-				tag=json_data["Name"],
-				start_time=json_data["Start Time"],
-				end_time=json_data["End Time"]
-			)
-		event.assign(**{key: json_data[key] for key in json_data if key not in ["Start Time", "End Time"]})
-		event_entry = Event(
-				name=event.tag,
-				obj=event,
-				user_id=current_user.id
-			)
-		db.session.add(event_entry)
-		db.session.commit()
+		for event_data in json_data["Events"]:
+			event = EventObject(
+					tag=event_data["Name"],
+					start_time=event_data["Start Time"],
+					end_time=event_data["End Time"]
+				)
+			event.assign(**{key: event_data[key] for key in event_data if key not in ["Start Time", "End Time"]})
+			event_entry = Event(
+					name=event.tag,
+					obj=event,
+					user_id=current_user.id
+				)
+			db.session.add(event_entry)
+			db.session.commit()
 
 		return redirect(url_for("users.view_events"))
 
 	return render_template("upload_file.html", form=form)
+
+@calendar.route('/cluster/<int:calendar_id>', methods=["GET", "POST"])
+@login_required
+def cluster(calendar_id):
+	form = ClusterForm()
+	calendar = Calendar.query.get_or_404(calendar_id)
+	notes = set([note for events in calendar.obj.events.values()
+					for event in events
+					for note in event.notes.keys()])
+	form.attribute.choices = [(note, note) for note in sorted(notes)]
+	form.start.choices = [(option, option) for option in sorted(CalendarObject.KNOWN_START_BEHAVIOR)]
+
+	if form.validate_on_submit():
+		# Assign defaults
+		shift = (form.shift.data if form.shift else 1)
+		start = (form.start.data if form.start else "earliest")
+		centers = (form.centers.data if form.centers else -1)
+		obj_ = calendar.obj
+		obj_.cluster(attribute=form.attribute.data,
+								shift=shift,
+								start=start,
+								centers=centers)
+		flag_modified(calendar, 'obj')
+		db.session.commit()
+
+		return redirect(url_for("users.view_calendar", calendar_id=calendar_id))
+
+	return render_template("cluster_calendar.html", form=form, calendar=calendar.obj)
+
+@calendar.route('/anti-cluster/<int:calendar_id>', methods=["GET", "POST"])
+@login_required
+def antiCluster(calendar_id):
+	form = AntiClusterForm()
+	calendar = Calendar.query.get_or_404(calendar_id)
+	notes = set([note for events in calendar.obj.events.values()
+					for event in events
+					for note in event.notes.keys()])
+	form.attribute.choices = [(note, note) for note in sorted(notes)]
+	form.start.choices = [(option, option) for option in sorted(CalendarObject.KNOWN_START_BEHAVIOR)]
+	if form.validate_on_submit():
+		# Assign defautls
+		shift = (form.shift.data if form.shift else 1)
+		start = (form.start.data if form.start else "earliest")
+		centers = (form.centers.data if form.centers else -1)
+		obj_ = calendar.obj
+		obj_.antiCluster(attribute=form.attribute.data,
+									shift=shift,
+									start=start,
+									centers=centers)
+
+		flag_modified(calendar, 'obj')
+		db.session.commit()
+
+		return redirect(url_for("users.view_calendar", calendar_id=calendar_id))
+
+	return render_template("anticluster_calendar.html", form=form, calendar=calendar.obj)

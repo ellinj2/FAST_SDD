@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="card">
+	<div class="card-header"> Cluster {{ calendar.tag }} </div>
+	<div class="card-body">
+		<form method="POST" style="text-align: center;">
+			{{ form.hidden_tag() }}
+			<p>
+				{{ form.attribute.label(class="custom-form-label") }}<br>{{ form.attribute(placeholder="Attribute Name (should be Event keyword)") }}
+			</p>
+			<p>
+				{{ form.shift.label(class="custom-form-label") }}<br>{{ form.shift() }}
+			</p>
+			<p>
+				{{ form.start.label(class="custom-form-label") }}<br>{{ form.start() }}
+			</p>
+			<p>
+				{{ form.centers.label(class="custom-form-label") }}<br>{{ form.centers() }}
+			</p>
+			{{ form.submit() }}
+		</form>
+	</div>
+</div>
+
+{% endblock %}
