@@ -189,12 +189,12 @@ class CalendarObject:
 		Notes:
 		- Times will be assigned round-robin style if necessary
 		"""
-		if start not in KNOWN_START_BEHAVIOR:
+		if start not in CalendarObject.KNOWN_START_BEHAVIOR:
 			warnings.warn(f"WARNING: The input start behavior does not match any known behaviors")
 			return
 
 		# Track events with attribute
-		relevant = [event for event in self.events.items() if attr in event.notes.keys()]
+		relevant = [event for events in self.events.values() for event in events if attribute in event.notes.keys()]
 
 		# Set number of clusters
 		local_clusters = centers
@@ -202,21 +202,21 @@ class CalendarObject:
 			local_clusters = len(relevant) ** (1/2)
 
 		# Gather descriptions
-		descriptions = [event.notes[attr] for event in relevant]
+		descriptions = [' '.join(event.notes[attribute]) for event in relevant]
 		
 		# Build text vectorizer
 		vectorizer = TfidfVectorizer(stop_words='english')
 		X = vectorizer.fit_transform(descriptions)
 
 		# Build KMeans clustering model
-		model = KMeans(n_clusters=local_clusters, init='k-means++', max_iter=100, n_init=1)
+		model = KMeans(n_clusters=int(local_clusters), init='k-means++', max_iter=100, n_init=1)
 		model.fit(X)
 
 		# Cluster events
-		assignments = [predict(event.notes[attr]) for event in relevant]
-		clusters = [[] for _ in set(assignments)]
+		assignments = [model.predict(vectorizer.transform(event.notes[attribute])) for event in relevant]
+		clusters = [[] for _ in range(local_clusters)]
 		for i in range(len(assignments)):
-			clusters[i].append(relevant[assignments[i]])
+			clusters[assignments[i][0]].append(relevant[i])
 
 		# Assign start times for each cluster, round-robin style
 		available_slots = len(self.time_slots)
@@ -233,7 +233,7 @@ class CalendarObject:
 			time_index = 0
 			for i in range(len(cluster)):
 				# Assign time				
-				index = (start_time + time_index) % available_slots + start_time
+				index = (start_index + time_index) % available_slots + start_index
 				cluster[i].assign(start_time=self.time_slots[index])
 				time_index += shift
 
