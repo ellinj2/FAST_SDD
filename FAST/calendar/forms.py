@@ -17,3 +17,11 @@ class ClusterForm(FlaskForm):
     centers = IntegerField("Number of clusters")
 
     submit = SubmitField("Cluster")
+
+class AntiClusterForm(FlaskForm):
+    attribute = SelectField("Anti-Clustering Attribute", validators=[DataRequired()])
+    shift = IntegerField("Time slots between Events")
+    start = SelectField("Starting time method")
+    centers = IntegerField("Number of clusters")
+
+    submit = SubmitField("Cluster")

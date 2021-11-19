@@ -245,6 +245,11 @@ class CalendarObject:
 			if loaded != len(cluster):
 				print("WARNING: Some events were not added successfully")
 
+	def antiCluster(self, attribute, shift=0, start="earliest", centers=-1):
+		if centers == -1:
+			centers = int(centers ** (1/2))
+		pass
+
 	def remove(self, events):
 		"""
 		Remove each event from this Calendar
