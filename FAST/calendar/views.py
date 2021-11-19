@@ -73,7 +73,9 @@ def upload_file():
 def cluster(calendar_id):
 	form = ClusterForm()
 	calendar = Calendar.query.get_or_404(calendar_id)
-	form.attribute.choices = [(note, note) for event in calendar.obj.events.values() for note in event.notes.keys()]
+	form.attribute.choices = [(note, note) for events in calendar.obj.events.values()
+											for event in events
+											for note in event.notes.keys()]
 
 	if form.validate_on_submit():
 		# Assign defaults
@@ -88,3 +90,28 @@ def cluster(calendar_id):
 		return redirect(url_for("users.view_calendar", calendar_id=calendar_id))
 
 	return render_template("cluster_calendar.html", form=form, calendar=calendar.obj)
+
+@calendar.route('/anti-cluster/<int:calendar_id>', methods=["GET", "POST"])
+@login_required
+def antiCluster(calendar_id):
+	form = AntiClusterForm()
+	calendar = Calendar.query.get_or_404(calendar_id)
+	form.attribute.choices = [(note, note) for events in calendar.obj.events.values()
+											for event in events
+											for note in event.notes.keys()]
+	form.start.choices = [(option, option) for option in sorted(CalendarObject.KNOWN_START_BEHAVIOR)]
+
+	if form.validate_on_submit():
+		# Assign defautls
+		form.shift = (form.shift.data if form.shift else 1)
+		form.start.data = (form.start.data if form.start else "earliest")
+		form.centers.data = (form.centers.data if form.centers else -1)
+		calendar.obj.antiCluster(attribute=form.attribute.data,
+									shift=form.shift.data,
+									start=form.start.data,
+									centers=form.cetners.data)
+
+
+		return redirect(url_for("users.view_calendar", calendar_id=calendar_id))
+
+	return render_template("anticluster_calendar.html", form=form, calendar=calendar.obj)
