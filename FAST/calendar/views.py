@@ -10,11 +10,15 @@ import os
 import json
 from sqlalchemy.orm.attributes import flag_modified
 
+# Registered Blueprint
 calendar = Blueprint("calendar", __name__)
 
 @calendar.route('/upload_event', methods=["GET", "POST"])
 @login_required
 def upload_event():
+	"""
+	Route to handle generation of a new Event
+	"""
 	form = EventForm()
 
 	if form.validate_on_submit():
@@ -38,15 +42,24 @@ def upload_event():
 @calendar.route('/download_calendar', methods=["GET", "POST"])
 @login_required
 def download_calendar():
+	"""
+	TO-DO : Implement downloading data
+	"""
 	return render_template("download_calendar.html")
 
 @calendar.route('/help')
 def help():
+	"""
+	TO-DO : Implement help dashboard
+	"""
 	return redirect(url_for('calendar.upload_event'))
 
 @calendar.route('/upload_file', methods=["GET", "POST"])
 @login_required
 def upload_file():
+	"""
+	Route to handle uploading a file to generate Events
+	"""
 	form = UploadForm()
 	if form.validate_on_submit():
 		file = form.file.data
@@ -73,6 +86,12 @@ def upload_file():
 @calendar.route('/cluster/<int:calendar_id>', methods=["GET", "POST"])
 @login_required
 def cluster(calendar_id):
+	"""
+	Route to handle clustering a Calendar
+
+	Inputs:
+	- calendar_id : Int unique identifier for a Calendar entry in the database
+	"""
 	form = ClusterForm()
 	calendar = Calendar.query.get_or_404(calendar_id)
 	notes = set([note for events in calendar.obj.events.values()
@@ -101,6 +120,12 @@ def cluster(calendar_id):
 @calendar.route('/anti-cluster/<int:calendar_id>', methods=["GET", "POST"])
 @login_required
 def antiCluster(calendar_id):
+	"""
+	Route to handle anti-clustering of a Calendar
+
+	Inputs:
+	- calendar_id : Int unique identifier for a Calendar entry in the database
+	"""
 	form = AntiClusterForm()
 	calendar = Calendar.query.get_or_404(calendar_id)
 	notes = set([note for events in calendar.obj.events.values()

@@ -1,7 +1,8 @@
+<!-- load underlying interface -->
 {% extends "base.html" %}
 
+<!-- Build form in a Bootstrap card -->
 {% block content %}
-
   <div class="card">
     <div class="card-header">Upload Calendar Information</div>
     <div class="card-body">
@@ -17,33 +18,4 @@
       </form>
     </div>
   </div>
-
-<!-- 
-<div class="container">
-  <div class="row header">
-    <h1>Put in your schedule: &nbsp;</h1>
-  </div>
-  <div class="row body">
-    <form action="#">
-      <ul>
-        <li>
-          <p>
-            <label for="schedule title">Schedule Title <span class="req">*</span></label>
-            <input type="schedule title" name="schedule title" placeholder="John's Schedule" />
-          </p>
-        <li>
-          <label for="schedule">Schedule:</label>
-          <textarea cols="46" rows="3" name="schedule" placeholder="ex: Friday, 1-2"></textarea>
-        </li>
-        
-        <li>
-          <input class="btn btn-submit" type="submit" value="Submit" />
-          <small>or press <strong>enter</strong></small>
-        </li>
-        
-      </ul>
-    </form>  
-  </div>
-</div>
- -->
 {% endblock %}
