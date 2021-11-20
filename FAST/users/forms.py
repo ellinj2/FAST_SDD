@@ -11,7 +11,15 @@ from wtforms.validators import (
 
 
 class SignupForm(FlaskForm):
-    """User Sign-up Form."""
+    """
+    User Sign-up Form
+
+    Fields:
+    - email : Unique String to identify a User
+    - password : Secure login verification String
+    - confirm : Verify the input password (MUST MATCH password FIELD)
+    - submit : Submission to push the Form back to the handler
+    """
     email = StringField(
         'Email',
         validators=[
@@ -36,7 +44,14 @@ class SignupForm(FlaskForm):
 
 
 class LoginForm(FlaskForm):
-    """User Log-in Form."""
+    """
+    User Log-in Form
+
+    Fields:
+    - email : Unique String to identify a User
+    - password : Secure login verification String
+    - submit : Submission to push the Form back to the handler
+    """
     email = StringField(
         'Email',
         validators=[
@@ -48,6 +63,15 @@ class LoginForm(FlaskForm):
     submit = SubmitField('Log In')
 
 class CalendarForm(FlaskForm):
+    """
+    Calendar generation Form
+
+    Fields:
+    - heuristic : List of (String, String) pairs of heuristics
+    - name : Pseudo-unique String to identify a selected Calendar
+    - timslots : new-line separated Strings used to assign Events to times (must be MM:DD:YYYY:HH:MM:SS)
+    - submit : Submission to push the Form back to the handler
+    """
     options = [('rand', "Random"),
                ('start', "Start-time Centered"),]
     heuristic = SelectField("Generation Heuristic", choices=options, validators=[DataRequired(),])

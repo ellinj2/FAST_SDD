@@ -15,11 +15,17 @@ def dashboard():
 @users.route('/logout')
 @login_required
 def logout():
+    """
+    Logout the current User
+    """
     logout_user()
     return redirect(url_for("index"))
 
 @users.route('/register', methods=["GET", "POST"])
 def register():
+    """
+    Register a new User
+    """
     form = SignupForm()
 
     if form.validate_on_submit():
@@ -37,6 +43,9 @@ def register():
 
 @users.route('/login', methods=["GET", "POST"])
 def login():
+    """
+    Attempt to login an existing User
+    """
     form = LoginForm()
 
     if form.validate_on_submit():
@@ -50,6 +59,9 @@ def login():
 @users.route("/view_events", methods=["GET"])
 @login_required
 def view_events():
+    """
+    Collect and display all Events associated with the current User
+    """
     events = Event.query.filter_by(user_id=current_user.id).order_by(Event.name.asc()).all()
     print(events[0].obj.start_time, events[0].obj.end_time)
     return render_template("view_events.html", events=events, len=len(events))
@@ -57,6 +69,9 @@ def view_events():
 @users.route('/generate_calendar', methods=["GET", "POST"])
 @login_required
 def generate_calendar():
+    """
+    Build dashboard to handle Calendar generation
+    """
     form = CalendarForm()
 
     if form.validate_on_submit():
@@ -83,5 +98,11 @@ def generate_calendar():
 @users.route('/view_calendar/<int:calendar_id>', methods=["GET"])
 @login_required
 def view_calendar(calendar_id):
+    """
+    Display a Calendar object
+
+    Inputs:
+    - calendar_id : Int unique identifier for the Calendar to view
+    """
     calendar = Calendar.query.get_or_404(calendar_id)
     return render_template("view_calendar.html", calendar=calendar)

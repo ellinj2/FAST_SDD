@@ -6,18 +6,47 @@ import pandas as pd
 import warnings
 
 class KMeansAnti:
+	"""
+	Machine Learning model to handle K-Means anti-clustering.
+
+	Attributes:
+	- k : Integer number of clusters
+	- centers : Numpy array holding k n-dimensional data points
+	- max_iter : Integer maximum number of iterations to learn new clusters
+
+	Methods:
+	- __init__(KMeansAnti, Int, Int) : Store necessary information for the model
+	- loss(KmeansAnti, Numpy.array, Numpy.array, Numpy.array : Get the total distance from all points to all clusters (i.e. how far off is the clustering?)
+	- __make_centers__(KMeansAnti, Numpy.array) : Find centers associated with the input data
+	- fit(KMeansAnti, Numpy.array) : Optimize the cluster centers through KMeans++ algorithm
+	- predict(KmeansAnti, Numpy.array) : Assign input data to clusters
+	"""
 	def __init__(self, n_clusters, max_iter=None):
 		self.k = n_clusters
 		self.centers = None
 		self.max_iter = max_iter
 
 	def loss(self, X, centroids, clusters):
+		"""
+		Find error in predictions
+
+		Inputs:
+		- X : Numpy.array() of data points to verify
+		- centroids : Numpy.array() of data points used as cluster centers
+		- clusters : Numpy.array() of clusters, where each index holds the venter associated with one data point
+
+		Returns:
+		- Float total distance between points and where they have been assigned
+		"""
 		sum_ = 0
 		for i, val in enumerate(X):
 			sum_ += np.linalg.norm(centroids[int(clusters[i])] - val)
 		return sum_
 
 	def __make_centers__(self, X):
+		"""
+		Internal operation to handle KMeans++ initialization
+		"""
 		centers = [0 for _ in range(self.k)]
 		centers[0] = X[np.random.randint(X.shape[0])]
 		distances = np.linalg.norm(X - centers[0])
@@ -28,6 +57,15 @@ class KMeansAnti:
 		return np.array(centers)
 
 	def fit(self, X):
+		"""
+		Learn the optimal centers of the input data using KMeans++
+
+		Inputs:
+		- X : Numpy.array() holding data points to cluster
+
+		Side-effects:
+		- Sets self.centers to hold the optimized cluster centers
+		"""
 		diff = True
 		cluster = np.zeros(X.shape[0])
 
@@ -52,6 +90,15 @@ class KMeansAnti:
 		self.centers = centroids
 
 	def predict(self, X):
+		"""
+		Estimate which clusters each input point belongs to
+
+		Inputs:
+		- X : Numpy.array holding data points to cluster
+
+		Returns:
+		- Numpy.array holding Int indices of which cluster each data point is assigned to
+		"""
 		assignments = np.zeros(X.shape[0], dtype=int)
 		for i, row in enumerate(X):
 			mn_dist = float('inf')
@@ -93,9 +140,15 @@ class EventObject:
 		self.notes = dict()
 
 	def __eq__(self, other):
+		"""
+		Internal comparator comparing Event tags
+		"""
 		return self.tag == other.tag
 
 	def __update_notes__(self, update):
+		"""
+		Internal operation to update internal data
+		"""
 		for key in update.keys():
 			if key not in self.notes:
 				self.notes[key] = []
@@ -123,6 +176,7 @@ class EventObject:
 		self.__update_notes__(kwargs)
 
 class CalendarObject:
+	# Start behaviors that are accepted by current algorithms
 	KNOWN_START_BEHAVIOR = [
 		"first",
 		"earliest",
@@ -309,6 +363,30 @@ class CalendarObject:
 			print("WARNING: Some events were not added successfully")
 
 	def antiCluster(self, attribute, shift=0, start="earliest", centers=-1):
+		"""
+		Anti-cluster the events in the calendar based on the attributes listed
+
+		Inputs:
+		attribute - String Attribute to anti-cluster around
+		shift - Int Number of time-slots between anti-clustered events (default = 0)
+		start - String Behavior to determine first assigned time (default = "earliest"). Options:
+			- "earliest": The first time is the earliest time available in the Calendar
+			- "first": The first time assigned to an event with the desired attribute
+			- "emptiest": The time slot with the fewest events assigned
+		centers - Int Number of anti-clusters desired (default = sqrt(number of relevant events))
+
+		Pre-conditions:
+		- This Calendar instance must have Events pre-loaded
+
+		Post-conditions:
+		- Events in this calendar instance have their assigned times set so events with similar attribute values are in close time
+		
+		Throws:
+		- Warning if start is not a known behavior
+
+		Notes:
+		- Times will be assigned round-robin style if necessary
+		"""
 		if start not in CalendarObject.KNOWN_START_BEHAVIOR:
 			warnings.warn(f"WARNING: The input start behavior does not match any known behaviors")
 			return
@@ -382,37 +460,8 @@ class CalendarObject:
 				if event in self.events[time]:
 					self.events[time].remove(event)
 
-	# def heuristics(self):
-	# 	"""
-	# 	Order the events in the Calendar into a schedule that has no conflicts using heuristics.
-
-	# 	Pre-conditions:
-	# 	Each Event in events must have assigned_start_time set
-	# 	start_time and end_time are comparable
-
-	# 	Post-condition:
-	# 	Each classroom in the schedule holds at most one exam at any moment.
-	# 	Each exam is assigned to exactly one classroom.
-	# 	"""
-
-	# 	self.classroom_count = 0;
-	# 	self.schedule = {}
-	# 	#iterate through all the start_time, since self.events is a dictionary with start_time as key
-	# 	#events with the earlist start_time gets assigned first
-	# 	for start_time in sorted(self.events.keys()):
-	# 		#iterate through all events with the same start_time
-	# 		for tmp_event in self.events[start_time]:
-	# 			room_found = 0;
-	# 			#iterate through all classrooms, attempting to find an available classroom
-	# 			for classroom_schedule in self.schedule:
-	# 				if classroom_schedule[-1].assigned_end_time < start_time:
-	# 					classroom_schedule.append(tmp_event)
-	# 					room_found = 1
-	# 					break;
-	# 			#no room available, request a new room
-	# 			if room_found == 0:
-	# 				self.schedule["classroom" + str(self.classroom_count)] = [tmp_event]
-	# 				self.classroom_count += 1
-
 	def __about(self):
+		"""
+		Debugging function to get relevant information about a Calendar
+		"""
 		print(f"This Calendar currently has {len(self.events)} events.\nThese events are stored as \{timestamp: [Event Object]\}")
