@@ -1,4 +1,4 @@
-from flask import render_template, Blueprint, redirect, url_for, request, send_from_directory
+from flask import render_template, Blueprint, redirect, url_for, request, send_file
 from flask_login import login_user, current_user, login_required, logout_user
 from FAST import app, db
 from FAST.users.forms import *
@@ -112,6 +112,7 @@ def view_calendar(calendar_id):
     return render_template("view_calendar.html", calendar=calendar)
 
 @users.route('/download_data', methods=["GET"])
+@login_required
 def download_data():
     """
     Download all Events and Calendars for the current User as a JSON file by calling .to_json() on each object
@@ -126,19 +127,19 @@ def download_data():
     # Write to JSON
     data = {"Calendars": calendars, "Events": events}
     # Save to app.config["TEMP_DATA"] + filename
-    filename = f"{current_user.email}_{datetime.now().strftime("%m_%d_%Y_%H_%M_%S")}.json"
-    dirname = os.path.join(app.config["TEMP_FILE"], filename)
-    json.dump(data, dirname)
-
-    # Delete app.config["TEMP_DATA"] + filename
-    os.remove(dirname)
-    send_from_directory(app.config["TEMP_FILE"], filename, as_attachment=True)
+    filename = f"{current_user.email}_{datetime.now().strftime('%m_%d_%Y_%H_%M_%S')}.json"
+    dirname = os.path.join(app.config["TEMP_DATA"], filename)
+    with open(dirname, 'w') as file:
+        json.dump(data, file)
 
     # Downoad JSON (name : user_email_currenttime.json)
     return_data = io.BytesIO()
     with open(dirname, 'rb') as fo:
         return_data.write(fo.read())
     return_data.seek(0)
+    
+    # Delete app.config["TEMP_DATA"] + filename
+    os.remove(dirname)
 
     return send_file(return_data, mimetype='application/json',
                      attachment_filename=filename)
