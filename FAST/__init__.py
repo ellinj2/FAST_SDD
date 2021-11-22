@@ -14,6 +14,7 @@ app = Flask(__name__)
 app.config["SECRET_KEY"] = "mysecretkey"
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///" + os.path.join(basedir, "data.sqlite")
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+app.config["TEMP_DATA"] = os.path.join(basedir, "temp")
 
 # Migrate database
 db = SQLAlchemy(app)

@@ -174,6 +174,13 @@ class EventObject:
 			self.assigned_end_time = end_time
 		self.__update_notes__(kwargs)
 
+	def toJson(self):
+		data = {"Name": self.tag, "Start Time": self.start_time, "End Time": self.end_time}
+		for key in self.notes.keys():
+			data[key] = self.notes[key]
+
+		return data
+
 class CalendarObject:
 	# Start behaviors that are accepted by current algorithms
 	KNOWN_START_BEHAVIOR = [
@@ -464,3 +471,8 @@ class CalendarObject:
 		Debugging function to get relevant information about a Calendar
 		"""
 		print(f"This Calendar currently has {len(self.events)} events.\nThese events are stored as \{timestamp: [Event Object]\}")
+
+	def toJson(self):
+		data = {"Name": self.tag, "Time Slots": {time: [e.toJson() for e in self.events[time]] for time in self.time_slots}}
+
+		return data
