@@ -1,8 +1,12 @@
-from flask import render_template, Blueprint, redirect, url_for, request
+from flask import render_template, Blueprint, redirect, url_for, request, send_from_directory
 from flask_login import login_user, current_user, login_required, logout_user
 from FAST import app, db
 from FAST.users.forms import *
 from FAST.database import *
+from datetime import datetime
+import json
+import io
+import os
 
 users = Blueprint("users", __name__)
 
@@ -115,4 +119,26 @@ def download_data():
     Notes:
     - For now, we will redirect to index.html. In the future, we should return to previous page
     """
-    return redirect(url_for('core.index'))
+    # Gather Calendars
+    calendars = [cal.obj.toJson() for cal in Calendar.query.filter_by(user_id=current_user.id).all()]
+    # Gather Events
+    events = [event.obj.toJson() for event in Event.query.filter_by(user_id=current_user.id).all()]
+    # Write to JSON
+    data = {"Calendars": calendars, "Events": events}
+    # Save to app.config["TEMP_DATA"] + filename
+    filename = f"{current_user.email}_{datetime.now().strftime("%m_%d_%Y_%H_%M_%S")}.json"
+    dirname = os.path.join(app.config["TEMP_FILE"], filename)
+    json.dump(data, dirname)
+
+    # Delete app.config["TEMP_DATA"] + filename
+    os.remove(dirname)
+    send_from_directory(app.config["TEMP_FILE"], filename, as_attachment=True)
+
+    # Downoad JSON (name : user_email_currenttime.json)
+    return_data = io.BytesIO()
+    with open(dirname, 'rb') as fo:
+        return_data.write(fo.read())
+    return_data.seek(0)
+
+    return send_file(return_data, mimetype='application/json',
+                     attachment_filename=filename)
