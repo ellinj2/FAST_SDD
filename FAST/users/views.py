@@ -111,5 +111,8 @@ def view_calendar(calendar_id):
 def download_data():
     """
     Download all Events and Calendars for the current User as a JSON file by calling .to_json() on each object
+    
+    Notes:
+    - For now, we will redirect to index.html. In the future, we should return to previous page
     """
-    pass
+    return redirect(url_for('core.index'))
