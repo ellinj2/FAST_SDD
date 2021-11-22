@@ -106,3 +106,10 @@ def view_calendar(calendar_id):
     """
     calendar = Calendar.query.get_or_404(calendar_id)
     return render_template("view_calendar.html", calendar=calendar)
+
+@users.route('/download_data', methods=["GET"])
+def download_data():
+    """
+    Download all Events and Calendars for the current User as a JSON file by calling .to_json() on each object
+    """
+    pass
