@@ -9,7 +9,7 @@ def load_user(user_id):
 	"""
 	Support login for db
 	"""
-    return User.query.get(user_id)
+	return User.query.get(user_id)
 
 class User(db.Model, UserMixin):
 	"""

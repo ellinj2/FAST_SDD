@@ -47,12 +47,11 @@ class KMeansAnti:
 		"""
 		Internal operation to handle KMeans++ initialization
 		"""
-		centers = [0 for _ in range(self.k)]
-		centers[0] = X[np.random.randint(X.shape[0])]
-		distances = np.linalg.norm(X - centers[0])
+		centers = [X[np.random.randint(X.shape[0])]]
+		distances = np.linalg.norm(X - centers[0], axis=1)
 		for i in range(1, self.k):
-			centers[i] = X[np.argmax(distances)]
-			distances = np.minimum(distances, np.linalg.norm(X - centers[i]))
+			centers.append(X[np.argmax(distances)])
+			distances = np.minimum(distances, np.linalg.norm(X - centers[-1], axis=1))
 
 		return np.array(centers)
 

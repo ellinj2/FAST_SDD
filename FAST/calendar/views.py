@@ -1,5 +1,4 @@
 from flask import render_template, Blueprint, redirect, url_for, request, flash
-from FAST.forms import DataUploadForm
 from flask_login import current_user, login_required, logout_user
 from FAST import app
 from FAST.calendar.forms import *
