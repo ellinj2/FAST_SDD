@@ -473,6 +473,6 @@ class CalendarObject:
 		print(f"This Calendar currently has {len(self.events)} events.\nThese events are stored as \{timestamp: [Event Object]\}")
 
 	def toJson(self):
-		data = {"Name": self.tag, "Time Slots": {time: [e.toJson() for e in self.time_slots[time]] for time in self.time_slots}}
+		data = {"Name": self.tag, "Time Slots": {time: [e.toJson() for e in self.events[time]] for time in self.time_slots}}
 
 		return data
