@@ -14,3 +14,8 @@
 .upload_file {
 	margin-left: 45%;
 }
+
+.card-header {
+	color: #7E7E7E;
+	font: bold 25px Helvetica, Arial, sans-serif;
+}
