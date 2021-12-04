@@ -144,6 +144,15 @@ class EventObject:
 		"""
 		return self.tag == other.tag
 
+	def __ne__(self, other):
+		"""
+		Internal comparator
+		"""
+		return self.tag != other.tag
+
+	def __hash__(self):
+		return self.tag.__hash__()
+
 	def __update_notes__(self, update):
 		"""
 		Internal operation to update internal data
@@ -214,7 +223,7 @@ class CalendarObject:
 		if events:
 			self.events=events
 		else:
-			self.events={time: [] for time in time_slots}
+			self.events={time: set() for time in time_slots}
 
 	def load(self, events):
 		"""
@@ -232,7 +241,7 @@ class CalendarObject:
 		loaded = 0
 		for e in events:
 			try:
-				self.events[e.assigned_start_time].append(e)
+				self.events[e.assigned_start_time].add(e)
 				loaded += 1
 			except:
 				print(f"WARNING: Event {e.tag} does not have an assigned start time")
@@ -341,7 +350,7 @@ class CalendarObject:
 
 		# Assign start times for each cluster, round-robin style
 		available_slots = len(self.time_slots)
-		for cluster in clusters:
+		for start, cluster in enumerate(clusters):
 			# Grab potential start times
 			start_index = 0
 			if start == "earliest":
@@ -351,13 +360,12 @@ class CalendarObject:
 			elif start == "emptiest":
 				# Grab index of emptiest time slot
 				start_index = np.array([len(self.events[key]) for key in self.time_slots]).argsort()[0]
-			time_index = 0
+			time_index = start
 			for i in range(len(cluster)):
 				# Assign time				
 				index = (start_index + time_index) % available_slots + start_index
 
 				cluster[i].assign(start_time=self.time_slots[index])
-				print(f"Assigned {cluster[i].tag} to {self.time_slots[index]}")
 				time_index += shift
 
 		# Remove cluster events from self.events
@@ -424,9 +432,9 @@ class CalendarObject:
 
 		# Assign start times for each cluster, round-robin style
 		available_slots = len(self.time_slots)
-		for cluster in clusters:
+		for start, cluster in enumerate(clusters):
 			# Grab potential start times
-			start_index = 0
+			start_index = start
 			if start == "earliest":
 				start_index = 0
 			elif start == "first":
@@ -439,7 +447,6 @@ class CalendarObject:
 				# Assign time				
 				index = (start_index + time_index) % available_slots + start_index
 				cluster[i].assign(start_time=self.time_slots[index])
-				print(f"Assigned {cluster[i].tag} to {self.time_slots[index]}")
 				time_index += shift
 
 			# Remove cluster events from self.events
@@ -464,7 +471,7 @@ class CalendarObject:
 		for event in events:
 			for time in self.time_slots:
 				if event in self.events[time]:
-					self.events[time].remove(event)
+					self.events[time] = set([e for e in self.events[time] if e != event])
 
 	def __about(self):
 		"""
