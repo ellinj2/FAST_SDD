@@ -9,14 +9,14 @@
 			<form method="POST" style="text-align: center;">
 				{{ form.hidden_tag() }}
 				<p>
-					{{ form.email.label(class="custom-form-label") }}<br>{{ form.email(placeholder="jane.doe@host.com") }}
+					{{ form.email(placeholder="Email", class="custom-form-label") }}
 				</p>
 				<p>
-					{{ form.password.label(class="custom-form-label") }}<br>{{ form.password(placeholder="**********") }}
+					{{ form.password(placeholder="Password", class="custom-form-label") }}
 				</p>
 				{{ form.submit() }}
 			</form>
-		</div>
+	</div>
 		<div class="card-footer text-center"><a href="registration.hml">Don't have an account?</a></div>
 	</div>
 {% endblock %}

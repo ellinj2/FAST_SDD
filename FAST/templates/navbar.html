@@ -2,16 +2,18 @@
 <div class="fast-nav">
 	<nav class="navbar navbar-expand-lg navbar-light bg-light">
 		<!-- TO-DO : Replace with logo -->
-		<a class="navbar-brand" href="{{ url_for('index') }}"> FAST </a>
+		<a class="navbar-brand" href="{{ url_for('index') }}">
+			<img src="./static/images/logo.jpg" alt="logo" style="width:80px;height:80px;">
+		</a>
 		<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navText" aria-controls="navText" aria-expanded="false" aria-label="Toggle navigation">
 			<span class="navbar-toggler-icon"></span>
 		</button>
 		<!-- Display supported buttons -->
 		<div class="collapse navbar-collapse" id="navText">
 			<ul class="navbar-nav me-auto mb-2 mb-lg-0">
-				<li class="nav-item">
+				<!-- <li class="nav-item">
 					<a class="nav-link active" aria-current="page" href="{{ url_for('index') }}"> HOME </a>
-				</li>
+				</li> -->
 				<!-- User options -->
 				{% if current_user.is_authenticated %}
 					<li class="nav-item">

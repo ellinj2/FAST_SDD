@@ -9,10 +9,10 @@
 			<form method="POST" style="text-align: center;">
 				{{ form.hidden_tag() }}
 				<p>
-					{{ form.tag.label(class="custom-form-label") }}<br>{{ form.tag(placeholder="Event #1 (should be fairly unique)", style="width: 75%;") }}
+					{{ form.tag(placeholder="Tag (should be fairly unique)", style="width: 75%;", class="custom-form-label") }}
 				</p>
 				<p>
-					{{ form.information.label(class="custom-form-label") }}<br>{{ form.information(placeholder="Start Time: MM:DD:YY:HH:MM:SS\nEnd Time: MM:DD:YY:HH:MM:SS\nKeyword: Information about the keyword\nNote: For the time beign, \"Start Time\" and \"End Time\" are mandatory fields", style="height: 75%; width: 75%;") }}
+					{{ form.information(placeholder="Start Time: MM:DD:YY:HH:MM:SS\nEnd Time: MM:DD:YY:HH:MM:SS\nKeyword: Information about the keyword\nNote: For the time beign, \"Start Time\" and \"End Time\" are mandatory fields", style="height: 75%; width: 75%;", class="custom-form-label") }}
 				</p>
 				{{ form.submit() }}
 			</form>

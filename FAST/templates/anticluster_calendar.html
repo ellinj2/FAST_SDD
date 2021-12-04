@@ -9,16 +9,16 @@
 		<form method="POST" style="text-align: center;">
 			{{ form.hidden_tag() }}
 			<p>
-				{{ form.attribute.label(class="custom-form-label") }}<br>{{ form.attribute(placeholder="Attribute Name (should be Event keyword)") }}
+				{{ form.attribute(placeholder="Attribute Name (should be Event keyword)", class="custom-form-label") }}
 			</p>
 			<p>
-				{{ form.shift.label(class="custom-form-label") }}<br>{{ form.shift() }}
+				{{ form.shift(class="custom-form-label") }}
 			</p>
 			<p>
-				{{ form.start.label(class="custom-form-label") }}<br>{{ form.start() }}
+				{{ form.start(class="custom-form-label") }}
 			</p>
 			<p>
-				{{ form.centers.label(class="custom-form-label") }}<br>{{ form.centers() }}
+				{{ form.centers(class="custom-form-label") }}
 			</p>
 			{{ form.submit() }}
 		</form>

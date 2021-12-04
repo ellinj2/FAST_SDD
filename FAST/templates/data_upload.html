@@ -9,10 +9,10 @@
       <form method="POST" action="/data_upload" style="text-align: center;">
         {{ form.hidden_tag() }}
         <p>
-          {{ form.title.label(class="custom-form-label") }}<br>{{ form.title(placeholder="John's Schedule") }}
+          {{ form.title(placeholder="Title", class="custom-form-label") }}
         </p>
         <p>
-          {{ form.content.label(class="custom-form-label") }}<br>{{ form.content(placeholder="Friday, 1-2") }}
+          {{ form.content(placeholder="Content", class="custom-form-label") }}
         </p>
         {{ form.submit() }}
       </form>
