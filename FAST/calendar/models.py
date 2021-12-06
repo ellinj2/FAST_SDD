@@ -137,18 +137,7 @@ class EventObject:
 		self.start_time = start_time
 		self.end_time = end_time
 		self.notes = dict()
-
-	def __eq__(self, other):
-		"""
-		Internal comparator comparing Event tags
-		"""
-		return self.tag == other.tag
-
-	def __ne__(self, other):
-		"""
-		Internal comparator
-		"""
-		return self.tag != other.tag
+		self.__id = -1
 
 	def __hash__(self):
 		return self.tag.__hash__()
@@ -158,6 +147,9 @@ class EventObject:
 		Internal operation to update internal data
 		"""
 		for key in update.keys():
+			if key == "id":
+				self.id = update["id"]
+				continue
 			if key not in self.notes:
 				self.notes[key] = []
 			if type(update[key]) is list:

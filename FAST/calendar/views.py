@@ -31,8 +31,12 @@ def upload_event():
 		event_entry = Event(name=event.tag,
 							obj=event,
 							user_id=current_user.id)
-
 		db.session.add(event_entry)
+		db.session.commit()
+
+		event.__id = event_entry.id
+		event_entry.obj = event
+		flag_modified(event_entry, "obj")
 		db.session.commit()
 		form = EventForm()
 		return redirect(url_for("users.view_events"))
@@ -75,7 +79,14 @@ def upload_file():
 					obj=event,
 					user_id=current_user.id
 				)
+			event.__id = event_entry.id
+			event_entry.obj = event
 			db.session.add(event_entry)
+			db.session.commit()
+
+			event.__id = event_entry.id
+			event_entry.obj = event
+			flag_modified(event_entry, "obj")
 			db.session.commit()
 
 		return redirect(url_for("users.view_events"))

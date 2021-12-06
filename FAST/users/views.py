@@ -60,15 +60,23 @@ def login():
             return redirect(url_for("index"))
     return render_template("login.html", form=form)
 
-@users.route("/view_events", methods=["GET"])
+@users.route("/view_events/")
+@users.route("/view_events/<int:start_id>", methods=["GET"])
 @login_required
-def view_events():
+def view_events(start_id=-1):
     """
     Collect and display all Events associated with the current User
     """
     events = Event.query.filter_by(user_id=current_user.id).order_by(Event.name.asc()).all()
-    print(events[0].obj.start_time, events[0].obj.end_time)
-    return render_template("view_events.html", events=events, len=len(events))
+    # Set first index from Calendar click-through
+    if start_id == -1:
+        start_id = 0
+    else:
+        for i, e in enumerate(events):
+            if e.id == start_id:
+                start_id = i
+                break
+    return render_template("view_events.html", events=events, len=len(events), start=start_id)
 
 @users.route('/generate_calendar', methods=["GET", "POST"])
 @login_required
